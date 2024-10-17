@@ -1,7 +1,7 @@
 # Project Charter
 
 | **Project Title** | Rakshak - Real-Time Surveillance System for Weapon Detection |
-| --- | --- |
+| :--- | :--- |
 | **Date Produced**  | October 15th, 2024 |
 | **Project Goals** | The primary goal of the Rakshak project is to enhance public safety through the development of an AI-based real-time weapon detection system. This system will monitor surveillance footage and instantly alert authorities when weapons are detected, allowing for faster response times in critical situations. |
 | **Project Objectives** | Build an AI/ML-powered system that can analyze live surveillance footage to detect weapons. |
