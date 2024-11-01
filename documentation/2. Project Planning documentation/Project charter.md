@@ -8,7 +8,7 @@
 | | Implement real-time alerts to notify security personnel when potential threats are identified. |
 | | Develop a user-friendly interface for security teams to monitor and respond to alerts efficiently. |
 | **Project Budget** | Estimated budget of 500$ for development. 6 months of development time. |
-| **Project Sponsor** | Professor Adam Tilson, University of Regina |
+| **Project Sponsor** | Mr. Adam Tilson, University of Regina |
 | **Project Manager** | Tirth V Patel |
 | **Additional Key Project Stakeholders** |- Mr. Trevor Douglas, Project Mentor <br /> -  Law Enforcement Teams (Names TBD once the first designs of the project are presented) | 
 | **Overall Project Milestones** | **Date** |
