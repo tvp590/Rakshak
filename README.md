@@ -1,4 +1,4 @@
-# Rakshak - Real-Time Surveillance System for Weapon Detection
+# Rakshak - Real-Time Weapon Detection System
 
 ## Project Idea
 
