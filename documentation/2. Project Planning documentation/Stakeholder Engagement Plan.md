@@ -1,6 +1,6 @@
 # Stakeholder Engagement Plan
 
-| **Project Name**| Rakshak - Real-Time Surveillance System for Weapon Detection | |
+| **Project Name**| Rakshak - Real-Time Weapon Detection System | |
 | :--- | :--- | :--- |
 | **Name** | **About the Stakeholder** | **How to Engage the Stakeholder**|
 | **Team Rakshak** | The development team responsible for creating and implementing the surveillance system. | **Collaborate Closely**: Hold weekly stand-up meetings to discuss progress, address challenges, and share updates on tasks and responsibilities. |
