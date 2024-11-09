@@ -1,6 +1,6 @@
 # Project Requirements
 
-| **Project Name** | Rakshak - Real-Time Surveillance System for Weapon Detection |
+| **Project Name** | Rakshak - Real-Time Weapon Detection System |
 | :--- | :--- |
 | **Problem Statement** | Public safety is a critical concern in environments like schools, airports, and large public gatherings. Traditional surveillance systems lack real-time intelligence and often rely on human operators to identify and respond to threats, which can lead to delays or missed threats. An automated, proactive system capable of detecting potential threats, such as weapons, in real time is essential to enhance safety and security in such environments.|
 | **Background** | Surveillance systems have evolved significantly, with AI models now capable of real-time analysis and anomaly detection. By implementing an AI-driven system like Rakshak, which integrates object detection models with existing CCTV networks, real-time alerts can be generated to aid security personnel in responding swiftly to potential threats. |

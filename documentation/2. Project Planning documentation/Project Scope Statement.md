@@ -1,6 +1,6 @@
 # Project Scope Statement
 
-| **Project Title** | Rakshak - Real-Time Surveillance System for Weapon Detection |
+| **Project Title** | Rakshak - Real-Time Weapon Detection System |
 | :--- | :--- |
 | **Project Deliverables** | **Detailed Description**          |
 | **Minimum Viable Product (MVP 1)** | Build an AI/ML model capable of detecting weapons in live surveillance footage. The model should identify potential threats (e.g., guns, knives, rifles) in real time. |
