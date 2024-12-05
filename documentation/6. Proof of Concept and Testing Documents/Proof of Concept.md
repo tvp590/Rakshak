@@ -41,6 +41,7 @@ The goal of this PoC is to demonstrate that the YOLO model can detect weapons fr
 ### Next Steps
 - **Fine-Tuning the Model**: We will experiment with modifying hyperparameters like learning rate, optimizer, etc., for better accuracy.
 - **Integration**:  Integrate the model with `Rakshak` system.
+- **Frontend and Backend Development**: Start developing the frontend and backend systems to support the model's deployment, including user interfaces and API endpoints for seamless interaction.
 - **Testing**: Test in various camera angles, lighting conditions, and real-world scenarios to evaluate performance in a production environment.
   
 
