@@ -24,3 +24,6 @@ class Institution(db.Model):
     
     def check_institution_password(self,passWord):
         return bcrypt.check_password_hash(self.password, passWord)
+
+def get_institution_by_id(institution_id):
+    return Institution.query.get(institution_id)

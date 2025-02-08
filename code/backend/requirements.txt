@@ -5,3 +5,8 @@ Flask-Cors
 python-dotenv
 flask-bcrypt
 flask-login
+opencv-python
+Flask-SocketIO
+ultralytics
+numpy
+psycopg2-binary

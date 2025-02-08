@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from ..extensions import db
-from ..models import Institution
+from ..models import Institution, get_institution_by_id
 from flask_login import login_required
 from ..utils import has_permission
 
@@ -72,7 +72,7 @@ def get_institution(id):
         if not has_permission():
             return jsonify({"message": "Unauthorized access"}), 403
 
-        institution = Institution.query.get(id)
+        institution = get_institution_by_id(id)
         if not institution:
             return jsonify({"message": "Institution not found"}), 404
 
@@ -99,7 +99,7 @@ def update_institution(id):
             return jsonify({"message": "Unauthorized access"}), 403
 
         data = request.get_json()
-        institution = Institution.query.get(id)
+        institution = get_institution_by_id(id)
         if not institution:
             return jsonify({"message": "Institution not found"}), 404
 
@@ -127,7 +127,7 @@ def delete_institution(id):
         if not has_permission():
             return jsonify({"message": "Unauthorized access"}), 403
 
-        institution = Institution.query.get(id)
+        institution = get_institution_by_id(id)
         if not institution:
             return jsonify({"message": "Institution not found"}), 404
 

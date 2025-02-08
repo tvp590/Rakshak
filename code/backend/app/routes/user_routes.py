@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from ..extensions import db
-from ..models import User, Institution, RoleEnum
+from ..models import User, Institution, RoleEnum, get_user_by_id
 from flask_login import login_required
 from ..utils import has_permission
 
@@ -72,7 +72,7 @@ def get_all_users():
 @login_required
 def get_user(id):
     try:
-        user = User.query.get(id)
+        user = get_user_by_id(id)
         if not user:
             return jsonify({"message": "User not found"}), 404
             
@@ -97,7 +97,7 @@ def get_user(id):
 @login_required
 def update_user(id):
     try:
-        user = User.query.get(id)
+        user = get_user_by_id(id)
         if not user:
             return jsonify({"message": "User not found"}), 404
         

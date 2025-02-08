@@ -31,3 +31,14 @@ Thumbs.db
 instance/
 *.sqlite3
 *.db
+
+# Yolo model weights
+app/yolo_model/*.pt
+
+# Test Videos and Results
+app/videos
+app/Results
+app/templates
+
+# Test script 
+test_stream.py

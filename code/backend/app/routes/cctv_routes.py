@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory,render_template
 from ..extensions import db
 from flask_login import login_required, current_user
-from ..models import CCTV, Institution, RoleEnum
+from ..models import CCTV, Institution, RoleEnum, get_cctv_by_id, get_cctv_details
 from ..utils import has_permission
 
 cctv_bp = Blueprint('cctv_bp', __name__)
@@ -84,7 +84,7 @@ def get_all_cctvs():
 @login_required
 def get_cctv(id):
     try:
-        cctv = CCTV.query.get(id)
+        cctv = get_cctv_by_id(id)
         if not cctv:
             return jsonify({"message": "CCTV not found"}), 404
         
@@ -110,7 +110,7 @@ def get_cctv(id):
 @login_required
 def update_cctv(id):
     try:
-        cctv = CCTV.query.get(id)
+        cctv = get_cctv_by_id(id)
         if not cctv:
             return jsonify({"message": "CCTV not found"}), 404
         
@@ -139,7 +139,7 @@ def update_cctv(id):
 @login_required
 def delete_cctv(id):
     try:
-        cctv = CCTV.query.get(id)
+        cctv = get_cctv_by_id(id)
         if not cctv:
             return jsonify({"message": "CCTV not found"}), 404
     
@@ -153,3 +153,8 @@ def delete_cctv(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "An error occurred while deleting the CCTV", "error": str(e)}), 500
+
+
+@cctv_bp.route('/view-feeds', methods=['GET'])
+def view_feeds():
+    return render_template('index.html')

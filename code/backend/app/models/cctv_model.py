@@ -24,3 +24,16 @@ class CCTV(db.Model):
 
     def check_cctv_password(self,passWord):
         return bcrypt.check_password_hash(self.password, passWord)
+
+def get_cctv_details(institution_id):
+    cctvs = CCTV.query.filter_by(institution_id=institution_id, is_active=True).all()
+    cctv_details = [] 
+
+    for cctv in cctvs:
+        rtsp_url = f"rtsp://{cctv.username}:{cctv.password}@{cctv.ip_address}:554/stream"
+        cctv_details.append((cctv.id, rtsp_url)) 
+
+    return cctv_details
+
+def get_cctv_by_id(cctv_id):
+    return CCTV.query.get(cctv_id)
