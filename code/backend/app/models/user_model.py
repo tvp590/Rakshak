@@ -30,6 +30,18 @@ class User(UserMixin,db.Model):
 
     def check_password(self,passWord):
         return bcrypt.check_password_hash(self.password, passWord)
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "role": self.role.name,  
+            "institution_id": self.institution_id,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
+    
 
 @login_manager.user_loader
 def load_user(user_id):

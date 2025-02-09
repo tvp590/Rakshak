@@ -18,12 +18,24 @@ class Institution(db.Model):
 
     cctvs = db.relationship('CCTV', back_populates='institution', lazy=True, cascade="all, delete-orphan")
     users = db.relationship('User', back_populates='institution', lazy=True, cascade="all, delete-orphan")
+    alerts = db.relationship('Alert', back_populates='institution', lazy=True, cascade="all, delete-orphan")
 
     def set_institution_password(self, passWord):
         self.password = bcrypt.generate_password_hash(passWord).decode('utf-8')
     
     def check_institution_password(self,passWord):
         return bcrypt.check_password_hash(self.password, passWord)
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "address": self.address,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
 
 def get_institution_by_id(institution_id):
     return Institution.query.get(institution_id)

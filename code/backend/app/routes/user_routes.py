@@ -32,7 +32,7 @@ def register_user_route():
         db.session.add(new_user)
         db.session.commit()
 
-        return jsonify({"message": "User registered successfully"}), 201
+        return jsonify({"message": "User registered successfully", "user": new_user.serialize()}), 201
 
     except Exception as e:
         db.session.rollback()
@@ -51,16 +51,7 @@ def get_all_users():
         if not users:
             return jsonify({"message": "No users found"}), 404
 
-        users_data = []
-        for user in users:
-            users_data.append({
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "institution_id" : user.institution_id,
-                "role": user.role.value
-            })
-
+        users_data = [user.serialize() for user in users]
         return jsonify(users_data), 200
 
     except Exception as e:
@@ -78,15 +69,8 @@ def get_user(id):
             
         if not has_permission(institution_id=user.institution_id):
             return jsonify({"message": "Unauthorized access"}), 403
-
-        user_data = {
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "institution_id" : user.institution_id,
-            "role": user.role.value
-        }
-        return jsonify(user_data), 200
+        
+        return jsonify(user.serialize()), 200
 
     except Exception as e:
         return jsonify({"message": "An error occurred while retrieving the user", "error": str(e)}), 500
@@ -119,7 +103,7 @@ def update_user(id):
 
         db.session.commit()
 
-        return jsonify({"message": "User Updated successfully"}), 200
+        return jsonify({"message": "User Updated successfully", "user": user.serialize()}), 200
 
     except Exception as e:
         db.session.rollback()

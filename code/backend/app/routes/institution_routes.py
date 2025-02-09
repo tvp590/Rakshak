@@ -29,7 +29,7 @@ def register_institution():
 
         db.session.add(new_institution)
         db.session.commit()
-        return jsonify({"message": "Institution registered successfully"}), 201
+        return jsonify({"message": "Institution registered successfully" , "Institution": new_institution.serialize()}), 201
 
     except Exception as e:
         db.session.rollback()
@@ -48,16 +48,7 @@ def get_all_institutions():
         if not institutions:
             return jsonify({"message": "No institutions found"}), 404
 
-        institutions_data = []
-        for institution in institutions:
-            institutions_data.append({
-                "id": institution.id,
-                "name": institution.name,
-                "address": institution.address,
-                "email": institution.email,
-                "phone": institution.phone
-            })
-
+        institutions_data = [institution.serialize() for institution in institutions]
         return jsonify(institutions_data), 200
 
     except Exception as e:
@@ -76,15 +67,7 @@ def get_institution(id):
         if not institution:
             return jsonify({"message": "Institution not found"}), 404
 
-        institution_data = {
-            "id": institution.id,
-            "name": institution.name,
-            "address": institution.address,
-            "email": institution.email,
-            "phone": institution.phone
-        }
-
-        return jsonify(institution_data), 200
+        return jsonify(institution.serialize()), 200
 
     except Exception as e:
         return jsonify({"message": "An error occurred while fetching the institution", "error": str(e)}), 500
@@ -112,7 +95,7 @@ def update_institution(id):
 
         db.session.commit()
 
-        return jsonify({"message": "Institution updated successfully"}), 200
+        return jsonify({"message": "Institution updated successfully", "Institution": institution.serialize()}), 200
 
     except Exception as e:
         db.session.rollback()

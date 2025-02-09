@@ -15,6 +15,7 @@ class CCTV(db.Model):
     password = db.Column(db.String(150), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=func.now())
+    alerts = db.relationship('Alert', back_populates='cctv', lazy=True, cascade="all, delete-orphan")
     institution_id = db.Column(db.Integer, db.ForeignKey('institutions.id'), nullable=False)
 
     institution = db.relationship('Institution', back_populates='cctvs')
@@ -24,6 +25,18 @@ class CCTV(db.Model):
 
     def check_cctv_password(self,passWord):
         return bcrypt.check_password_hash(self.password, passWord)
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "location": self.location,
+            "ip_address": self.ip_address,
+            "username": self.username,
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat(),
+            "institution_id": self.institution_id
+        }
 
 def get_cctv_details(institution_id):
     cctvs = CCTV.query.filter_by(institution_id=institution_id, is_active=True).all()

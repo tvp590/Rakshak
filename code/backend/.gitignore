@@ -33,7 +33,8 @@ instance/
 *.db
 
 # Yolo model weights
-app/yolo_model/*.pt
+/app/yolo_model/*.pt
+!/app/yolo_model/.gitkeep
 
 # Test Videos and Results
 app/videos

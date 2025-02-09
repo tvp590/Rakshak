@@ -42,7 +42,7 @@ def register_cctv():
 
         db.session.add(new_cctv)
         db.session.commit()
-        return jsonify({"message": "CCTV registered successfully"}), 201
+        return jsonify({"message": "CCTV registered successfully", "cctv": new_cctv.serialize()}), 201
 
     except Exception as e:
         db.session.rollback()  # Rollback in case of failure
@@ -64,14 +64,7 @@ def get_all_cctvs():
         else:
             return jsonify({"message": "Unauthorized access"}), 403
 
-        cctv_list = [{
-            "id": cctv.id,
-            "name": cctv.name,
-            "location": cctv.location,
-            "ip_address": cctv.ip_address,
-            "username": cctv.username,
-            "is_active": cctv.is_active
-        } for cctv in cctvs]
+        cctv_list = [cctv.serialize() for cctv in cctvs]
 
         return jsonify(cctv_list), 200
 
@@ -91,16 +84,8 @@ def get_cctv(id):
         if not has_permission(institution_id=cctv.institution_id):
             return jsonify({"message": "Unauthorized access"}), 403
 
-        cctv_data = {
-            "id": cctv.id,
-            "name": cctv.name,
-            "location": cctv.location,
-            "ip_address": cctv.ip_address,
-            "username": cctv.username,
-            "is_active": cctv.is_active
-        }
-        return jsonify(cctv_data), 200
-
+        return jsonify(cctv.serialize()), 200
+        
     except Exception as e:
         return jsonify({"message": "An error occurred while retrieving the CCTV", "error": str(e)}), 500
 
@@ -127,7 +112,7 @@ def update_cctv(id):
             cctv.set_cctv_password(data.get('password'))
         
         db.session.commit()
-        return jsonify({"message": "CCTV updated successfully"}), 200
+        return jsonify({"message": "CCTV updated successfully", "cctv": cctv.serialize()}), 200
     
     except Exception as e:
         db.session.rollback()
@@ -154,7 +139,3 @@ def delete_cctv(id):
         db.session.rollback()
         return jsonify({"message": "An error occurred while deleting the CCTV", "error": str(e)}), 500
 
-
-@cctv_bp.route('/view-feeds', methods=['GET'])
-def view_feeds():
-    return render_template('index.html')
