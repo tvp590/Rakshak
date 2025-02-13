@@ -1,0 +1,45 @@
+# Python-specific files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+*.env
+
+# .pytest_cache directory
+.pytest_cache/
+
+# VS Code settings
+.vscode/
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
+
+# dotenv files
+.env
+*.env
+
+# SQLite database files
+instance/
+*.sqlite3
+*.db
+
+# Yolo model weights
+/app/yolo_model/*.pt
+!/app/yolo_model/.gitkeep
+
+# Test Videos and Results
+app/videos
+app/Results
+app/templates
+
+# Test script 
+test_stream.py

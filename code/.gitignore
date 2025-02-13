@@ -1,0 +1,12 @@
+.vscode/
+.DS_Store
+
+.env
+
+nginx/hls/video.m3u8
+nginx/hls/*.m3u8
+nginx/hls/*.ts
+
+/streams/*
+!/streams/.gitkeep
+
