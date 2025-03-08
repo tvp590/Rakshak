@@ -1,24 +1,39 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { useRouter } from 'next/router';
-import CustomFormGroup from '../components/customFormGroup';
 import Link from 'next/link';
-import { GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
+import CustomFormGroup from '../components/customFormGroup';
+import axios from 'axios';
+import { useUser } from '../context/userContext';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+  const { setUser } = useUser(); 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Todo : Perform login logic here
-    console.log('Email:', email);
-    console.log('Password:', password);
-    setError('Invalid email or password')
-    router.push('/dashboard');
-    // e.preventDefault();
+    setError("");
+    try {
+      const response = await axios.post(
+        "/api/auth/login",
+        { email, password }
+      );
+      if (response.status === 200) {
+        setUser(response.data.user);  
+        router.push("/cctvFeeds");
+      }
+    }
+    catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message);
+      } else {
+        setError("An error occurred. Please try again.");
+      }
+    }
   };
 
   return (
@@ -68,7 +83,7 @@ const LoginPage = () => {
 
               <Row>
                 <Col className="text-center">
-                <Link href="/forgot-password" className="text-decoration-none text-primary hover-underline">
+                <Link href="/forgotPassword" className="text-decoration-none text-primary hover-underline">
                     Forgot Password?
                 </Link>
                 </Col>
@@ -91,7 +106,7 @@ const LoginPage = () => {
 
 export default LoginPage;
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getServerSideProps: GetServerSideProps = async () => {
   return {
     props: {
       pageTitle: "Login - Rakshak",

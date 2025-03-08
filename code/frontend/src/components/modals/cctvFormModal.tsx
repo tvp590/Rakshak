@@ -2,14 +2,8 @@ import { useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import { useTheme } from "../../context/themeContext";
 import CustomFormGroup from "../customFormGroup";
-
-
-interface CCTVFormProps {
-  show: boolean;
-  onHide: () => void;
-  onSubmit: (data: any) => void;
-  initialData?: any;
-}
+import { CCTV, CCTVFormProps, Role } from "../../types";
+import { useUser } from "../../context/userContext";
 
 const CCTVForm = ({
   show,
@@ -18,18 +12,28 @@ const CCTVForm = ({
   initialData,
 }: CCTVFormProps) => {
   const { isDarkMode } = useTheme();
-  const [formData, setFormData] = useState(
-    initialData || { name: "", location: "", username: "", password: "", ip: "" }
-  );
+  const { user } = useUser();
+  const isSuperAdmin = user?.role === Role.SuperAdmin;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [formData, setFormData] = useState<CCTV>({
+    name: initialData?.name || "",
+    location: initialData?.location || "",
+    username: initialData?.username || "",
+    password: initialData?.password || "",
+    ip_address: initialData?.ip_address || "",
+    is_active : initialData?.is_active || false,
+    id: initialData?.id || 0,
+    institution_id : initialData?.institution_id || 0
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = () => {
-    onSubmit(formData);
-    onHide();
+    onSubmit(formData); 
+    onHide();  
   };
 
   return (
@@ -51,6 +55,7 @@ const CCTVForm = ({
       >
         <Form data-bs-theme={isDarkMode ? "dark" : "light"}>
           <CustomFormGroup
+            name="name"
             label="Name"
             type="text"
             value={formData.name}
@@ -59,6 +64,7 @@ const CCTVForm = ({
             required
           />
           <CustomFormGroup
+            name="location"
             label="Location"
             type="text"
             value={formData.location}
@@ -67,28 +73,40 @@ const CCTVForm = ({
             required
           />
           <CustomFormGroup
+            name="username"
             label="Username"
             type="text"
-            value={formData.username}
+            value={formData.username || ""}
             onChange={handleChange}
             placeholder="Enter username"
             required
           />
           <CustomFormGroup
+            name="password"
             label="Password"
             type="password"
-            value={formData.password}
+            value={formData.password || ""}
             onChange={handleChange}
             placeholder="Enter password"
             required
           />
           <CustomFormGroup
+            name="ip_address"
             label="IP Address"
             type="text"
-            value={formData.ip}
+            value={formData.ip_address}
             onChange={handleChange}
             placeholder="Enter IP address"
             required
+          />
+          <CustomFormGroup
+            name="institution_id"
+            label="Institution ID"
+            type="text"
+            value={formData.institution_id || 0}
+            onChange={handleChange}
+            placeholder="Institution ID"
+            disabled={!isSuperAdmin} 
           />
         </Form>
       </Modal.Body>

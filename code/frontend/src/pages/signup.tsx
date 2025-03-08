@@ -6,13 +6,16 @@ import Link from 'next/link';
 import ToggleSignUpType from '../components/toggleSignUpType';
 import InstitutionForm from '../components/institutionForm';
 import UserForm from '../components/userForm';
-import { GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
+import axios from 'axios';
+import { useUser } from '../context/userContext';
 
 const SignUpPage = () => {
   const [isInstitution, setIsInstitution] = useState<boolean>(false);
   const [institutionName, setInstitutionName] = useState<string>('');
   const [institutionEmail, setInstitutionEmail] = useState<string>('');
   const [institutionContact, setInstitutionContact] = useState<string>('');
+  const [institutionAddress, setInstitutionAddress] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -20,43 +23,69 @@ const SignUpPage = () => {
   const [institutionCode,setInstitutionCode] = useState<string>('');
   const [error, setError] = useState<string>('');
   const router = useRouter();
+  const { setUser } = useUser();
   const { isDarkMode } = useTheme();
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
-    if (isInstitution) {
-      if (!institutionName || !institutionEmail || !institutionContact || !password || !confirmPassword) {
-        setError('Please fill in all fields for institution sign-up.');
-        return;
+    try {
+      if (isInstitution) {
+        if (!institutionName || !institutionEmail || !institutionContact || !password || !confirmPassword) {
+          setError("Please fill in all fields for institution sign-up.");
+          return;
+        }
+        if (password !== confirmPassword) {
+          setError("Passwords do not match.");
+          return;
+        }
+
+        const response = await axios.post("/api/institution/register", {
+          name: institutionName,
+          email: institutionEmail,
+          phone: institutionContact,
+          password: password,
+          address: institutionAddress,
+        });
+
+        if (response.status === 201) {
+          setUser(response.data.user);
+          router.push("/cctvFeeds");
+        } else {
+          setError("An error occurred during registration.");
+        }
       }
-
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.');
-        return;
+      else{
+        if (!name || !email || !password || !confirmPassword || !institutionCode) {
+          setError("Please fill in all fields for user sign-up.");
+          return;
+        }
+        if (password !== confirmPassword) {
+          setError("Passwords do not match.");
+          return;
+        }
+        const response = await axios.post("/api/user/register", {
+          name: name,
+          email: email,
+          password: password,
+          institution_id: institutionCode,
+        });
+        
+        if (response.status === 201) {
+          setUser(response.data.user);
+          router.push("/cctvFeeds");
+        } else {
+          setError("An error occurred during registration.");
+        }
       }
-
-      console.log('Institution Name:', institutionName);
-      console.log('Institution Email:', institutionEmail);
-      console.log('Institution Contact:', institutionContact);
-      setError('');
-      router.push('/dashboard');
-    } else {
-      if (!name || !email || !password || !confirmPassword) {
-        setError('Please fill in all fields for user sign-up.');
-        return;
+    } 
+    catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message);
+      } else {
+        setError("An error occurred. Please try again.");
       }
-
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.');
-        return;
-      }
-
-      console.log('User Name:', name);
-      console.log('Email:', email);
-      setError('');
-      router.push('/dashboard');
     }
   };
 
@@ -84,6 +113,8 @@ const SignUpPage = () => {
                   setInstitutionEmail={setInstitutionEmail}
                   institutionContact={institutionContact}
                   setInstitutionContact={setInstitutionContact}
+                  institutionAddress={institutionAddress}
+                  setInstitutionAddress={setInstitutionAddress}
                   password={password}
                   setPassword={setPassword}
                   confirmPassword={confirmPassword}
@@ -126,10 +157,10 @@ const SignUpPage = () => {
 
 export default SignUpPage;
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getServerSideProps: GetServerSideProps = async () => {
   return {
     props: {
-      pageTitle: "sign Up - Rakshak",
+      pageTitle: "Sign Up - Rakshak",
     },
   };
 };

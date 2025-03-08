@@ -1,1 +1,1 @@
-from .events import handle_connect, handle_disconnect
+from .events import socketio,handle_weapon_alert

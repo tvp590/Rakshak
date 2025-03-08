@@ -1,30 +1,8 @@
 import React from "react";
 import { Table, Button } from "react-bootstrap";
+import { User, UserTableProps } from "../../types";
 
-interface User {
-  user_id: number;
-  name: string;
-  email: string;
-  role: string;
-  institution: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface UserTableProps {
-  users: User[];
-  isDarkMode: boolean;
-  filterText: string;
-  onEdit: (user: User) => void;
-  onRemove: (user: User) => void;
-}
-
-const UserTable: React.FC<UserTableProps> = ({ users, isDarkMode, filterText, onEdit, onRemove }) => {
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(filterText.toLowerCase()) ||
-      user.email.toLowerCase().includes(filterText.toLowerCase())
-  );
+const UserTable= ({ users, isDarkMode, onEdit, onRemove }: UserTableProps) => {
 
   return (
     <Table striped bordered hover responsive className={`${isDarkMode ? "table-dark" : "table-light"}`}>
@@ -40,19 +18,19 @@ const UserTable: React.FC<UserTableProps> = ({ users, isDarkMode, filterText, on
         </tr>
       </thead>
       <tbody>
-        {filteredUsers.map((user) => (
-          <tr key={user.user_id}>
+        {users.map((user : User) => (
+          <tr key={user.id}>
             <td>{user.name}</td>
             <td>{user.email}</td>
             <td>{user.role}</td>
-            <td>{user.institution}</td>
+            <td>{user.institution_id}</td>
             <td>{user.created_at}</td>
             <td>{user.updated_at}</td>
             <td>
               <Button variant="warning" onClick={() => onEdit(user)} className="me-2">
                 Edit
               </Button>
-              <Button variant="danger" onClick={() => onRemove(user)}>
+              <Button variant="danger" onClick={() => user.id !== null && onRemove(user.id)}>
                 Remove
               </Button>
             </td>

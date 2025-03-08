@@ -1,16 +1,8 @@
 import React from "react";
 import { Table, Button } from "react-bootstrap";
-import { Institution } from "../../pages/manageInstitutions";
-
-interface InstitutionTableProps {
-  institutions: Institution[];
-  filteredInstitutions: Institution[];
-  onEdit: (institution: Institution) => void;
-  onRemove: (institution: Institution) => void;
-}
+import { InstitutionTableProps } from "../../types";
 
 const InstitutionTable  = ({
-  institutions,
   filteredInstitutions,
   onEdit,
   onRemove,
@@ -22,7 +14,7 @@ const InstitutionTable  = ({
           <th>Name</th>
           <th>Address</th>
           <th>Email</th>
-          <th>Contact</th>
+          <th>Phone Number</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -32,7 +24,7 @@ const InstitutionTable  = ({
             <td>{institution.name}</td>
             <td>{institution.address}</td>
             <td>{institution.email}</td>
-            <td>{institution.contact}</td>
+            <td>{institution.phone}</td>
             <td>
               <Button
                 variant="warning"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Set default values for environment variables if they are not defined
+# Set default values for environment variables
 : ${POSTGRES_HOST:="db"}
 : ${POSTGRES_PORT:="5432"}
 
@@ -11,6 +11,13 @@ while ! nc -z $POSTGRES_HOST $POSTGRES_PORT; do
 done
 echo "Postgres is ready!"
 
-# Start Flask application
-echo "Starting Flask app..."
-exec python3 run.py
+echo "[Info] Initializing Database..."
+python3 init_db.py
+if [ $? -ne 0 ]; then
+    echo "[Error] Database initialization failed. Exiting..."
+    exit 1
+fi
+
+echo "[Info] Starting Server..."
+exec gunicorn --config /app/gunicorn.conf.py run:app
+# exec python3 run.py

@@ -5,19 +5,14 @@ import { useTheme } from "../context/themeContext";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import Sidebar from "./sidebar";
+import { LayoutProps } from "../types";
+import { useUser } from "../context/userContext";
 
-interface LayoutProps {
-  children: React.ReactNode;
-  pageTitle: string;
-  isLoggedIn: boolean;
-  onLogout: () => void;
-  user:{role?:string} | null;
-}
-
-const Layout = ({ children, pageTitle, isLoggedIn, onLogout, user }: LayoutProps) => {
+const Layout = ({ children, pageTitle, isLoggedIn, onLogout }: LayoutProps) => {
   const { isDarkMode } = useTheme();
   const routesWithoutSidebar = ['/login', '/signup', '/about-us','contact-us', '/forgot-password'];
   const router = useRouter();
+  const { user } = useUser();
   const shouldShowSidebar = user && !routesWithoutSidebar.includes(router.pathname);
 
   useEffect(() => {

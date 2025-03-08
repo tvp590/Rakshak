@@ -1,18 +1,6 @@
 import React from 'react';
 import CustomFormGroup from './customFormGroup';
-
-interface InstitutionFormProps {
-  institutionName: string;
-  setInstitutionName: (value: string) => void;
-  institutionEmail: string;
-  setInstitutionEmail: (value: string) => void;
-  institutionContact: string;
-  setInstitutionContact: (value: string) => void;
-  password: string;
-  setPassword: (value: string) => void;
-  confirmPassword: string;
-  setConfirmPassword: (value: string) => void;
-}
+import { InstitutionFormProps } from '../types';
 
 const InstitutionForm = ({
   institutionName,
@@ -21,6 +9,8 @@ const InstitutionForm = ({
   setInstitutionEmail,
   institutionContact,
   setInstitutionContact,
+  institutionAddress,
+  setInstitutionAddress,
   password,
   setPassword,
   confirmPassword,
@@ -54,6 +44,15 @@ const InstitutionForm = ({
             onChange={(e) => setInstitutionContact(e.target.value)}
             placeholder="Enter Institution's contact details"
             required
+        />
+        <CustomFormGroup
+          label="Institution Address"
+          type="text"
+          value={institutionAddress}
+          name="institutionAddress"
+          onChange={(e) => setInstitutionAddress(e.target.value)}
+          placeholder="Enter Institution's address"
+          required
         />
         <CustomFormGroup
             label="Password"

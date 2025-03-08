@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { Navbar, Nav, Container, Row, Col, Button, NavDropdown, Offcanvas } from 'react-bootstrap';
 import { useTheme } from '../context/themeContext';
 import { FaSun, FaMoon } from 'react-icons/fa';
-
-interface NavbarProps {
-  isLoggedIn: boolean;
-  onLogout: () => void;
-}
+import { NavbarProps } from '../types';
 
 const AppNavbar = ({ isLoggedIn, onLogout}: NavbarProps) => {
   const [showOffcanvas, setShowOffcanvas] = useState(false);

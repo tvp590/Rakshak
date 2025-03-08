@@ -13,8 +13,11 @@ COPY . /app/
 EXPOSE 5001
 
 ENV FLASK_APP=run.py
-ENV FLASK_ENV=production
+
+COPY gunicorn.conf.py /app/gunicorn.conf.py
+RUN chmod +x /app/gunicorn.conf.py
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,16 +1,11 @@
-import { GetStaticProps } from "next";
-export default function Home() {
+import React from 'react'
+
+const index = () => {
   return (
-    <>
-      Hello
-    </>
-  );
+    <div>
+      Index
+    </div>
+  )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  return {
-    props: {
-      pageTitle: "Home - Rakshak", 
-    },
-  };
-};
+export default index

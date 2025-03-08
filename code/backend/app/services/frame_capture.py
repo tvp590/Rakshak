@@ -1,25 +1,23 @@
 import cv2
+import os
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-def capture_rtsp_feed(rtsp_url):
+def capture_frames(rtsp_url):
     try:
-        cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+        os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;60000" 
+        cap = cv2.VideoCapture(rtsp_url, cv2.CAP_ANY)
         if not cap.isOpened():
             logging.error(f"Error: Unable to open RTSP stream from {rtsp_url}")
             return
-
-        stream_fps = 30
-        frame_delay = 1 / stream_fps
-        cap.set(cv2.CAP_PROP_FPS, 30)  
 
         while True:
             ret, frame = cap.read()
             if not ret:
                 logging.warning(f"⚠️ Warning: Failed to grab frame from {rtsp_url}")
                 break
-            yield frame, frame_delay
+            yield frame
 
     except Exception as e:
         logging.error(f"Exception in capture_rtsp_feed: {str(e)}")

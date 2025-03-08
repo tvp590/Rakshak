@@ -1,18 +1,49 @@
-// pages/AlertHistory.tsx
-import React, { useState } from "react";
-import { Container, Table, Button, Alert, Form, Col, Row } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Container, Alert, Form, Col, Row } from "react-bootstrap";
 import { useTheme } from "../context/themeContext";
 import AlertModal from "../components/modals/alertModal";
-import { GetStaticProps } from "next";
+import axios from "axios";
+import { Alerts } from "../types"; 
+import AlertsTable from "../components/tables/alertsTable";
+import { useUser } from "../context/userContext";
+import { useRouter } from "next/router";
+import { GetServerSideProps } from "next";
 
 const AlertHistory = () => {
   const { isDarkMode } = useTheme();
-  const [selectedAlert, setSelectedAlert] = useState<any>(null);
+  const [selectedAlert, setSelectedAlert] = useState<Alerts | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  
-  const handleViewAlert = (alert: any) => {
+  const [alertsHistory, setAlertsHistory] = useState<Alerts[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useUser(); 
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const response = await axios.get("/api/alert/all");
+        setAlertsHistory(response.data);
+        setLoading(false);
+      } catch (err : unknown) {
+        console.log(err)
+        setError("Error fetching alerts.");
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+
+    useEffect(() => {
+      if (user === null) {
+        router.push('/login');
+      }
+    }, [router, user]);
+
+  const handleViewAlert = (alert: Alerts) => {
     setSelectedAlert(alert);
     setShowModal(true);
   };
@@ -22,29 +53,10 @@ const AlertHistory = () => {
     setShowModal(false);
   };
 
-  const alertsHistory = [
-    {
-      id: 1,
-      image: "/placeholder.jpg",
-      description: "Weapon detected in Zone A at 10:30 AM.",
-      time: "10:30 AM",
-      location: "Zone A",
-      resolution: "Resolved at 11:00 AM by Officer John.",
-    },
-    {
-      id: 2,
-      image: "/placeholder.jpg",
-      description: "Unauthorized entry detected in Zone C at 11:15 AM.",
-      time: "11:15 AM",
-      location: "Zone C",
-      resolution: "Resolved at 11:45 AM by Officer Sarah.",
-    },
-  ];
-
   const filteredAlerts = alertsHistory.filter(
     (alert) =>
-      alert.description.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedDate ? alert.time.includes(selectedDate) : true)
+      alert.weapon_type.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedDate ? alert.created_at.includes(selectedDate) : true)
   );
 
   return (
@@ -59,7 +71,7 @@ const AlertHistory = () => {
           <Form.Group as={Col} controlId="search">
             <Form.Control
               type="text"
-              placeholder="Search by description"
+              placeholder="Search by weapon type"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -74,35 +86,18 @@ const AlertHistory = () => {
         </Row>
       </Form>
 
-      {filteredAlerts.length > 0 ? (
-        <Table striped bordered hover responsive variant={isDarkMode ? "dark" : "light"}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Description</th>
-              <th>Time</th>
-              <th>Location</th>
-              <th>Resolution</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAlerts.map((alert) => (
-              <tr key={alert.id}>
-                <td>{alert.id}</td>
-                <td>{alert.description}</td>
-                <td>{alert.time}</td>
-                <td>{alert.location}</td>
-                <td>{alert.resolution}</td>
-                <td>
-                  <Button variant="primary" onClick={() => handleViewAlert(alert)}>
-                    View Details
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <Alert variant="danger" className="text-center">
+          {error}
+        </Alert>
+      ) : filteredAlerts.length > 0 ? (
+        <AlertsTable
+          alerts={filteredAlerts}
+          onViewAlert={handleViewAlert}
+          isDarkMode={isDarkMode}
+        />
       ) : (
         <Alert
           variant={isDarkMode ? "dark" : "light"}
@@ -124,10 +119,10 @@ const AlertHistory = () => {
 
 export default AlertHistory;
 
-export const getStaticProps : GetStaticProps = async () => {
-    return {
-      props: {
-        pageTitle: "Alert History - Rakshak",
-      },
-    };
+export const getServerSideProps: GetServerSideProps = async () => {
+  return {
+    props: {
+      pageTitle: "Alert History - Rakshak",
+    },
+  };
 };

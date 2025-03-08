@@ -1,38 +1,57 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import Layout from "../components/layout";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import { ThemeProvider } from "../context/themeContext";
+import { UserProvider, useUser } from "../context/userContext";
+import axios from "axios";
+import { WeaponAlertProvider } from "../context/WeaponAlertContext";
 
-export default function App({ Component, pageProps }: AppProps) {
+function AppContent({ Component, pageProps, router }: AppProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const router = useRouter();
-  const user = { role: 'superAdmin' }; // Todo : Add logic to get User role
+  const { user, setUser } = useUser();
 
-  const handleLogout = () => {
-    setIsLoggedIn(false); 
-    localStorage.removeItem("authToken"); 
-    router.push("/login"); 
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post("/api/auth/logout", {}, {
+        withCredentials: true
+      });
+
+      if (response.status === 200) {
+        setUser(null);
+        router.push("/login");
+      } else {
+        console.error("Failed to log out:", response);
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   };
 
   useEffect(() => {
-    // const token = localStorage.getItem("authToken");
-    // setIsLoggedIn(!!token); 
-    setIsLoggedIn(true);
-  }, []);
-  
+    setIsLoggedIn(!!user);
+  }, [user]);
+
   return (
-    <ThemeProvider>
-      <Layout 
-        pageTitle={pageProps?.pageTitle || "Rakshak"} 
-        isLoggedIn={isLoggedIn} 
-        onLogout={handleLogout}
-        user={user}
-      >
-        <Component {...pageProps} />
-      </Layout>
-    </ThemeProvider>
+    <Layout
+      pageTitle={pageProps?.pageTitle || "Rakshak"}
+      isLoggedIn={isLoggedIn}
+      onLogout={handleLogout}
+    >
+      <Component {...pageProps} />
+    </Layout>
+  );
+}
+
+export default function App(appProps: AppProps) {
+  return (
+    <UserProvider>
+      <ThemeProvider>
+        <WeaponAlertProvider>
+            <AppContent {...appProps} />
+          </WeaponAlertProvider>
+      </ThemeProvider>
+    </UserProvider>
   );
 }

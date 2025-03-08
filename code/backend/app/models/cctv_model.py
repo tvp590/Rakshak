@@ -19,12 +19,6 @@ class CCTV(db.Model):
     institution_id = db.Column(db.Integer, db.ForeignKey('institutions.id'), nullable=False)
 
     institution = db.relationship('Institution', back_populates='cctvs')
-
-    def set_cctv_password(self, passWord):
-        self.password = bcrypt.generate_password_hash(passWord).decode('utf-8')
-
-    def check_cctv_password(self,passWord):
-        return bcrypt.check_password_hash(self.password, passWord)
     
     def serialize(self):
         return {
@@ -43,8 +37,12 @@ def get_cctv_details(institution_id):
     cctv_details = [] 
 
     for cctv in cctvs:
-        rtsp_url = f"rtsp://{cctv.username}:{cctv.password}@{cctv.ip_address}:554/stream"
-        cctv_details.append((cctv.id, rtsp_url)) 
+        rtsp_url = f"rtsp://{cctv.username}:{cctv.password}@{cctv.ip_address}:554/stream1"
+        cctv_details.append({
+            'cctv_id': cctv.id,
+            'rtsp_url': rtsp_url,
+            'location': cctv.location,
+        })
 
     return cctv_details
 

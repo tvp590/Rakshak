@@ -1,17 +1,8 @@
-// InstitutionModal.tsx
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { Institution } from "../../pages/manageInstitutions";
 import { useTheme } from "../../context/themeContext";
 import CustomFormGroup from "../customFormGroup";
-
-
-interface InstitutionModalProps {
-  show: boolean;
-  onHide: () => void;
-  onSave: (institution: Institution) => void;
-  institution: Institution | null;
-}
+import { Institution, InstitutionModalProps } from "../../types";
 
 const InstitutionModal = ({
   show,
@@ -24,7 +15,7 @@ const InstitutionModal = ({
     name: institution?.name || "",
     address: institution?.address || "",
     email: institution?.email || "",
-    contact: institution?.contact || "",
+    phone: institution?.phone || "",
   });
 
   useEffect(() => {
@@ -34,7 +25,7 @@ const InstitutionModal = ({
         name: institution.name,
         address: institution.address,
         email: institution.email,
-        contact: institution.contact,
+        phone: institution.phone
       });
     }
   }, [institution]);
@@ -92,10 +83,10 @@ const InstitutionModal = ({
             required
           />
           <CustomFormGroup
-            label="Contact"
-            name="contact"
+            label="Phone Number"
+            name="phone"
             type="text"
-            value={formData.contact}
+            value={formData.phone}
             onChange={handleChange}
             placeholder="Enter contact number"
             required

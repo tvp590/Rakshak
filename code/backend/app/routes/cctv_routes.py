@@ -36,9 +36,9 @@ def register_cctv():
             location=location,
             ip_address=ip_address,
             username=username,
-            institution_id=institution_id
+            institution_id=institution_id,
+            password=password
         )
-        new_cctv.set_cctv_password(password)
 
         db.session.add(new_cctv)
         db.session.commit()
@@ -108,8 +108,7 @@ def update_cctv(id):
         cctv.ip_address = data.get('ip_address', cctv.ip_address)
         cctv.username = data.get('username', cctv.username)
         cctv.is_active = data.get('is_active', cctv.is_active)
-        if data.get('password'):
-            cctv.set_cctv_password(data.get('password'))
+        cctv.password = data.get('password', cctv.password)
         
         db.session.commit()
         return jsonify({"message": "CCTV updated successfully", "cctv": cctv.serialize()}), 200

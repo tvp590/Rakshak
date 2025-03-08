@@ -2,26 +2,12 @@ import React from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 import CustomFormGroup from "../customFormGroup";
 import { useTheme } from "../../context/themeContext";
-
-interface UserModalProps {
-  show: boolean;
-  onHide: () => void;
-  onSave: (user: any) => void;
-  user: any | null;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  formData: {
-    name: string;
-    email: string;
-    password: string;
-    role: string;
-    institution:string;
-  };
-}
+import { Role, UserModalProps } from "../../types";
 
 const UserModal = ({ show, onHide, onSave, user, handleChange, formData }: UserModalProps) => {
   const {isDarkMode} = useTheme();
   const handleSave = () => {
-    onSave({ ...formData, user_id: user?.user_id });
+    onSave(formData); 
   };
 
   return (
@@ -69,7 +55,7 @@ const UserModal = ({ show, onHide, onSave, user, handleChange, formData }: UserM
             label="Institution"
             name ="institution"
             type="text"
-            value={formData.institution}
+            value={formData.institution_id}
             onChange={handleChange}
             placeholder="Enter institution"
           />
@@ -77,7 +63,7 @@ const UserModal = ({ show, onHide, onSave, user, handleChange, formData }: UserM
             <Form.Label>Role</Form.Label>
             <Form.Select
               name="role"
-              value={formData.role}
+              value={formData.role ?? Role.User}
               onChange={handleChange}
               className="py-2 px-4 border-2 rounded-2 shadow-sm bg-light text-black"
               style={{
@@ -86,9 +72,9 @@ const UserModal = ({ show, onHide, onSave, user, handleChange, formData }: UserM
               }}
             >
               <option value="">Select Role</option>
-              <option value="Super Admin">Super Admin</option>
-              <option value="Site Admin">Site Admin</option>
-              <option value="User">User</option>
+              <option value={Role.SuperAdmin}>{Role.SuperAdmin}</option>
+              <option value={Role.SiteAdmin}>{Role.SiteAdmin}</option>
+              <option value={Role.User}>{Role.User}</option>
             </Form.Select>
           </Form.Group>
         </Form>

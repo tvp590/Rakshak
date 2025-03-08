@@ -4,14 +4,9 @@ import { GoSidebarCollapse } from 'react-icons/go';
 import { useTheme } from '../context/themeContext';
 import { IconContext } from "react-icons";
 import { usePathname } from 'next/navigation';
+import { Role, SidebarProps } from '../types';
 
-interface SidebarProps {
-  user:{
-    role: Role | null;
-  }
-}
 type SidebarItem = "divider" | { href: string; label: string };
-type Role = 'user' | 'siteAdmin' | 'superAdmin';
 
 const Sidebar = ({ user } : SidebarProps ) => {
   const { isDarkMode } = useTheme();
@@ -22,7 +17,7 @@ const Sidebar = ({ user } : SidebarProps ) => {
   const toggleSidebar = () => setShowSidebar(!showSidebar);
 
   useEffect(() => {
-    const navbar = document.querySelector('.navbar');
+    const navbar = document.querySelector('.navbar') as HTMLElement;
     if (navbar) {
       setNavbarHeight(navbar.offsetHeight);
     }

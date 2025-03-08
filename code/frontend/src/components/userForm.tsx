@@ -1,18 +1,6 @@
 import React from 'react';
 import CustomFormGroup from './customFormGroup';
-
-interface UserFormProps {
-  name: string;
-  setName: (value: string) => void;
-  email: string;
-  setEmail: (value: string) => void;
-  password: string;
-  setPassword: (value: string) => void;
-  confirmPassword: string;
-  setConfirmPassword: (value: string) => void;
-  institutionCode: string;
-  setInstitutionCode: (value: string) => void;
-}
+import { UserFormProps } from '../types';
 
 const UserForm  = ({
   name,

@@ -1,13 +1,9 @@
 import React from 'react';
 import { ToggleButtonGroup, ToggleButton, Form } from 'react-bootstrap';
 import { useTheme } from '../context/themeContext';
+import { ToggleSignUpTypeProps } from '../types';
 
-interface ToggleSignUpTypeProps {
-  isInstitution: boolean;
-  setIsInstitution: (val: boolean) => void;
-}
-
-const ToggleSignUpType: React.FC<ToggleSignUpTypeProps> = ({ isInstitution, setIsInstitution }) => {
+const ToggleSignUpType= ({ isInstitution, setIsInstitution } : ToggleSignUpTypeProps) => {
   const { isDarkMode } = useTheme();
   
   return (

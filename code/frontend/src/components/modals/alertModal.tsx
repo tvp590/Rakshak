@@ -2,12 +2,7 @@ import React from "react";
 import { Modal, Button, Row, Col } from "react-bootstrap";
 import { useTheme } from "../../context/themeContext";
 import Image from "next/image";
-
-interface AlertModalProps {
-  show: boolean;
-  alert: any | null;
-  onClose: () => void;
-}
+import { AlertModalProps } from "../../types";
 
 const AlertModal = ({ show, alert, onClose } : AlertModalProps) => {
   const { isDarkMode } = useTheme();
@@ -28,7 +23,7 @@ const AlertModal = ({ show, alert, onClose } : AlertModalProps) => {
         <Row>
           <Col xs={12} md={6}>
             <Image
-              src={alert.image}
+              src={alert.image_path}
               alt="Alert"
               width={800}
               height={450}
@@ -40,11 +35,10 @@ const AlertModal = ({ show, alert, onClose } : AlertModalProps) => {
             />
           </Col>
           <Col xs={12} md={6}>
-            <h5>{alert.description}</h5>
             <p>
-              <strong>Time:</strong> {alert.time}
+              <strong>Time:</strong> {alert.created_at}
               <br />
-              <strong>Location:</strong> {alert.location}
+              <strong>Location:</strong> {alert?.location}
             </p>
           </Col>
         </Row>

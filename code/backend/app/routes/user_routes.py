@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from ..extensions import db
 from ..models import User, Institution, RoleEnum, get_user_by_id
-from flask_login import login_required
+from flask_login import login_required, current_user
 from ..utils import has_permission
 
 user_bp = Blueprint('user_bp', __name__)
@@ -44,10 +44,16 @@ def register_user_route():
 @login_required
 def get_all_users():
     try:
-        if not has_permission():
+        if current_user.role == RoleEnum.superAdmin:
+            users = User.query.all()
+        elif current_user.role == RoleEnum.siteAdmin:
+            institution = Institution.query.filter_by(id=current_user.institution_id).first()
+            if not institution:
+                return jsonify({"message": "Institution not found. Cannot get users"}), 404
+            users = User.query.filter_by(institution_id=institution.id).all()
+        else:
             return jsonify({"message": "Unauthorized access"}), 403
-        
-        users = User.query.all()
+            
         if not users:
             return jsonify({"message": "No users found"}), 404
 
