@@ -12,7 +12,7 @@ timeout = 120
 
 preload_app = True 
 
-loglevel = "debug"
+loglevel = "warning"
 
 accesslog = "-"
 

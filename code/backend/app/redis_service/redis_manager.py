@@ -35,6 +35,5 @@ def start_redis_listener(channel='weapon_alerts'):
         print("✅ Starting Redis listener...", flush=True)
         listener_thread = threading.Thread(target=subscriber, daemon=True)
         listener_thread.start()
-        print("✅ Redis listener started!", flush=True)
     except Exception as e:
         logging.error(f"Error starting Redis listener: {str(e)}")

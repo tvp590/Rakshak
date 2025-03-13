@@ -16,3 +16,4 @@ gevent==24.11.1
 gevent-websocket==0.10.1
 redis==5.2.1
 Flask-Mail==0.10.0
+celery==5.4.0
