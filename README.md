@@ -14,3 +14,4 @@ By implementing **Rakshak** in various environments, we hope to create a safer a
 ## Project Vlogs
 
 - [Vlog1](https://youtu.be/uRUrYmM65Us)
+- [Vlog2](https://youtu.be/H9dpu83g6AI)
