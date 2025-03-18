@@ -1,7 +1,9 @@
 import logging
-from .tasks import start_stream_task, start_yolo_detection_task
 from ..extensions import redis_client
 from celery.result import AsyncResult
+from .tasks.stream_task import start_stream_task
+from .tasks.detection_task import start_yolo_detection_task
+
 
 def start_all_streams(cctv_details, institution_id):
     try:
@@ -14,12 +16,11 @@ def start_all_streams(cctv_details, institution_id):
             try:
                 stream_task = start_stream_task.apply_async(args=(cctv['cctv_id'], cctv['rtsp_url']))
                 yolo_task = start_yolo_detection_task.apply_async(args=(cctv['cctv_id'], cctv['rtsp_url'], cctv['location'], institution_id))
-
+                    
                 redis_client.hset(f"tasks:{cctv['cctv_id']}", "stream_task_id", stream_task.id)
                 redis_client.hset(f"tasks:{cctv['cctv_id']}", "yolo_task_id", yolo_task.id)
-
                 logging.info(f"Started tasks for CCTV {cctv['cctv_id']} with task IDs: {stream_task.id}, {yolo_task.id}")
-            
+
             except Exception as e:
                 logging.error(f"Error starting tasks for CCTV {cctv['cctv_id']}: {str(e)}")
 

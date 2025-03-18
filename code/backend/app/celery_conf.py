@@ -1,15 +1,23 @@
 from celery import Celery, Task
 from app.config import Config 
+import os
 
 def make_celery(flask_app=None):
     celery = Celery(
         "celery_worker", 
-        broker=Config.CELERY_BROKER_URL,
-        backend=Config.CELERY_RESULT_BACKEND
+        broker=os.environ.get('REDIS_URL', 'redis://redis_container:6379/0'), 
+        backend=os.environ.get('REDIS_URL', 'redis://redis_container:6379/0'),
+        include=[
+            "app.services.tasks.stream_task",
+            "app.services.tasks.detection_task",
+            "app.services.tasks.email_task",
+        ],
     )
+
     celery.conf.update(
-        broker_url=Config.CELERY_BROKER_URL,
-        result_backend=Config.CELERY_RESULT_BACKEND,
+        task_default_queue="celery",
+        task_default_exchange="celery",
+        task_default_routing_key="celery",
         accept_content=["json"],
         task_serializer="json",
         result_serializer="json",
@@ -23,9 +31,9 @@ def make_celery(flask_app=None):
                 with flask_app.app_context():
                     return self.run(*args, **kwargs)
 
-        celery.Task = FlaskTask
-        flask_app.extensions["celery"] = celery 
+        celery.Task = FlaskTask 
+        flask_app.extensions["celery"] = celery
 
     return celery
 
-celery_app = make_celery()  
+# celery_app = make_celery()

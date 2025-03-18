@@ -23,6 +23,5 @@ class Config:
     logging.getLogger('flask_mail').setLevel(logging.WARNING)
     logging.getLogger('smtplib').setLevel(logging.WARNING)
 
-    REDIS_URL = "redis://redis_container:6379/0"
-    CELERY_RESULT_BACKEND = REDIS_URL
-    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
+    CELERY_BROKER_URL = os.environ.get('REDIS_URL')

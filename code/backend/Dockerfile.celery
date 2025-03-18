@@ -1,31 +1,23 @@
 FROM python:3.12-slim
 
-# Set working directory to /app
 WORKDIR /app
-
 
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/* 
+    ffmpeg \ 
+    && rm -rf /var/lib/apt/lists/*
 
-    
-# Copy only necessary files
 COPY requirements.txt /app/
 
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire app folder into /app
 COPY . /app/
-COPY app /app/app
 
-# # Ensure correct permissions
 # RUN useradd -ms /bin/bash celeryuser
 # RUN chown -R celeryuser:celeryuser /app
 # RUN chmod -R 755 /app
 
 # USER celeryuser
 
-# Start Celery worker
-CMD ["celery", "-A", "app.celery_conf:celery_app", "worker", "--loglevel=info"]
+CMD ["celery", "-A", "app.run:celery_app", "worker", "--loglevel=info"]

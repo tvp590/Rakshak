@@ -91,7 +91,19 @@ def stop_streams():
         if not has_permission(institution_id=institution_id):
             return jsonify({"message": "Unauthorized access"}), 403
 
-        stop_all_streams()
+        # cctv_details = get_cctv_details(institution_id)
+
+        LOCAL_RTSP_URL = 'app/videos/video1_appletv1.mp4'  
+        LOCAL_2_RTSP_URL = 'app/videos/invideo_ai_720_.mp4'
+        cctv_details = [
+                    {'cctv_id': 1, 'rtsp_url': LOCAL_RTSP_URL, 'location': 'Test Location 1'},
+                    {'cctv_id': 2, 'rtsp_url': LOCAL_2_RTSP_URL, 'location': 'Test Location 2'}
+        ]
+
+        if not cctv_details:
+            return({"error" : "No CCTV and RTSP URLs found. Aborting streaming."}), 400
+
+        stop_all_streams(cctv_details)
 
         return jsonify({"message": "Streams stopped successfully!"}), 200
     except Exception as e:

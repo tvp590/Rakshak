@@ -5,7 +5,7 @@ from .routes import user_bp, auth_bp, institution_bp, cctv_bp, stream_bp, alert_
 from flask_cors import CORS
 from .socketio_events import socketio
 from .redis_service import start_redis_listener
-from .celery_conf import make_celery
+import os
 
 def create_app():
     app = Flask(__name__)
@@ -34,23 +34,13 @@ def create_app():
 
         app.config.from_mapping(
             CELERY=dict(
-                broker_url="redis://redis_container:6379/0",
-                result_backend="redis://redis_container:6379/0",
+                broker_url=os.environ.get('REDIS_URL', 'redis://redis_container:6379/0'),
+                result_backend=os.environ.get('REDIS_URL', 'redis://redis_container:6379/0'),
                 task_ignore_result=True,
-                broker_transport_options={
-                    "visibility_timeout": 3600,
-                    "fanout_prefix": True,
-                    "fanout_patterns": True,
-                    "socket_timeout": 10,
-                    "socket_connect_timeout": 10,
-                },
-                task_acks_late=True,
-                worker_prefetch_multiplier=1, 
+                task_track_started=True,
                 broker_connection_retry_on_startup=True,
             )
         )
-
-        make_celery(app)
 
         start_redis_listener()
 

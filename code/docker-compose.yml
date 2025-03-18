@@ -42,11 +42,15 @@ services:
       SMTP_MAIL_PASSWORD: ${SMTP_MAIL_PASSWORD}
       SMTP_MAIL_DEFAULT_SENDER: ${SMTP_MAIL_DEFAULT_SENDER}
       SMTP_MAIL_DEFAULT_RECIPIENT: ${SMTP_MAIL_DEFAULT_RECIPIENT}
+      CELERY_BROKER_URL: ${REDIS_URL}
+      CELERY_RESULT_BACKEND: ${REDIS_URL}
     ports:
       - 5001:5001
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy 
     networks: 
       - app_network
     restart: unless-stopped
@@ -91,6 +95,11 @@ services:
     networks:
       - app_network
     restart: always
+    command: ["redis-server", "--bind", "0.0.0.0", "--protected-mode", "no"]
+    healthcheck:
+      test: ["CMD", "sh", "-c", "redis-server --version || exit 1"] 
+      interval: 5s
+      retries: 10
 
   celery:
     build:
@@ -98,8 +107,10 @@ services:
       dockerfile: Dockerfile.celery
     container_name: celery_worker
     depends_on:
-      - redis
-      - backend
+      redis:
+        condition: service_healthy 
+      backend:
+        condition: service_started
     restart: always
     networks:
       - app_network
@@ -108,7 +119,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./backend/app:/app/app
+      - ./streams:/app/streams
     
     
 networks:

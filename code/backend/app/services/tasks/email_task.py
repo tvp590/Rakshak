@@ -1,10 +1,13 @@
 import os
 from flask_mail import Message
-from ..extensions import mail
-from dotenv import load_dotenv
+from app.extensions import mail
+from celery import shared_task
 
-def send_alert_email(camera_id, location, recipient=os.getenv("SMTP_MAIL_DEFAULT_RECIPIENT"), subject="Weapon Detected Alert"):
+@shared_task(queue="celery")
+def send_alert_email(camera_id, location, recipient=None, subject="Weapon Detected Alert"):
     try:
+        recipient = recipient or os.getenv("SMTP_MAIL_DEFAULT_RECIPIENT")
+
         if not recipient:
             print("SMTP_MAIL_DEFAULT_RECIPIENT is not set in environment variables.")
             return
@@ -13,8 +16,8 @@ def send_alert_email(camera_id, location, recipient=os.getenv("SMTP_MAIL_DEFAULT
         🚨 <strong>Weapon Detected Alert</strong>
         <br/>
         <br/>
-       
-         A weapon has been detected in the CCTV footage. Please take immediate action.
+    
+        A weapon has been detected in the CCTV footage. Please take immediate action.
         
         <br/>
         <br/>
