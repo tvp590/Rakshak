@@ -5,6 +5,8 @@ from .routes import user_bp, auth_bp, institution_bp, cctv_bp, stream_bp, alert_
 from flask_cors import CORS
 from .socketio_events import socketio
 from .redis_service import start_redis_listener
+import os
+import logging
 
 def create_app():
     app = Flask(__name__)
@@ -31,6 +33,16 @@ def create_app():
         login_manager.init_app(app)
         mail.init_app(app)
 
+        app.config.from_mapping(
+            CELERY=dict(
+                broker_url=os.environ.get('REDIS_URL', 'redis://redis_container:6379/0'),
+                result_backend=os.environ.get('REDIS_URL', 'redis://redis_container:6379/0'),
+                task_ignore_result=True,
+                task_track_started=True,
+                broker_connection_retry_on_startup=True,
+            )
+        )
+
         start_redis_listener()
 
         # Register blueprints
@@ -40,7 +52,10 @@ def create_app():
         app.register_blueprint(cctv_bp, url_prefix='/api/cctv')
         app.register_blueprint(stream_bp, url_prefix='/api/stream')
         app.register_blueprint(alert_bp, url_prefix='/api/alert')
-    
+
+        logging.getLogger("flask_mail").setLevel(logging.ERROR)
+        logging.getLogger("smtplib").setLevel(logging.ERROR)
+
     except Exception as e:
         print(f"[ERROR] Failed to initialize application: {str(e)}")
         raise

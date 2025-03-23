@@ -1,21 +1,20 @@
 import subprocess
 import logging
 import os
+from celery import shared_task
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-def start_stream(stream_id, rtsp_url):
+@shared_task(queue="celery")
+def start_stream_task(stream_id, rtsp_url):
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     output_dir = f"./streams/{stream_id}"
     output_path = os.path.join(output_dir, "playlist.m3u8")
 
     os.makedirs(output_dir, exist_ok=True)
-
     is_local_file = rtsp_url.endswith((".mp4", ".avi", ".mkv", ".mov"))
 
     command = [
         "ffmpeg",
         "-loglevel", "info",
-        "-rtsp_transport", "tcp",
         "-re" if is_local_file else "",
         "-i", rtsp_url,
         "-c:v", "libx264",
@@ -35,9 +34,13 @@ def start_stream(stream_id, rtsp_url):
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         stdout, stderr = process.communicate()
-        if process.returncode != 0:
-            logging.error(f"Error in stream process: {stderr.decode()}")
 
-        return process
+        if process.returncode != 0:
+            error_message = stderr.decode()
+            logging.error(f"Error in stream process: {error_message}")
+            return {"status": "error", "stream_id": stream_id, "message": error_message}
+        
+        return {"status": "started", "stream_id": stream_id, "pid": process.pid}
     except Exception as e:
         logging.error(f"Failed to start stream {stream_id}: {str(e)}")
+        return {"status": "error", "stream_id": stream_id, "error": str(e)}

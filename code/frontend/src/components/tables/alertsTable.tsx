@@ -2,42 +2,45 @@ import React from "react";
 import { Table, Button, Image } from "react-bootstrap";
 import { AlertsTableProps } from "../../types";
 
-
-const AlertsTable = ({ alerts, onViewAlert, isDarkMode } : AlertsTableProps) => {
+const AlertsTable = ({ alerts, onViewAlert, isDarkMode }: AlertsTableProps) => {
   return (
-    <Table striped bordered hover responsive variant={isDarkMode ? "dark" : "light"}>
+    <Table
+      striped
+      bordered
+      hover
+      responsive
+      variant={isDarkMode ? "dark" : "light"}
+      className="align-middle"
+    >
       <thead>
         <tr>
-          <th>ID</th>
           <th>Weapon Type</th>
           <th>Status</th>
           <th>Time</th>
           <th>Image</th>
-          <th>Actions</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         {alerts.map((alert) => (
-          <tr key={alert.id}>
-            <td>{alert.id}</td>
+          <tr key={alert.created_at + alert.cctv_id}>
             <td>{alert.weapon_type}</td>
             <td>{alert.status}</td>
-            <td>{alert.created_at}</td>
+            <td style={{ whiteSpace: "nowrap" }}>{alert.created_at}</td>
             <td>
               {alert.image_path ? (
                 <Image
-                  src={alert.image_path}
+                  src={`${process.env.NEXT_PUBLIC_URL}${alert.image_path.replace(".", "")}`}
                   alt="Alert Image"
                   thumbnail
-                  width={100}
-                  height={100}
+                  style={{ width: "120px", height: "auto", objectFit: "cover", borderRadius: "8px" }}
                 />
               ) : (
-                <p>No image available</p>
+                <span>No image</span>
               )}
             </td>
             <td>
-              <Button variant="primary" onClick={() => onViewAlert(alert)}>
+              <Button size="sm" variant="primary" onClick={() => onViewAlert(alert)}>
                 View Details
               </Button>
             </td>

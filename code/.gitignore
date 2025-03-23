@@ -10,3 +10,5 @@ nginx/hls/*.ts
 /streams/*
 !/streams/.gitkeep
 
+/images/*
+!/images/.gitkeep

@@ -8,6 +8,7 @@ import CCTVFeedModal from "../components/modals/displayCCTVFeedModal";
 import { useUser } from "../context/userContext";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { useWeaponAlert } from "../context/WeaponAlertContext";
 
 
 const CCTVFeeds = () => {
@@ -20,13 +21,8 @@ const CCTVFeeds = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useUser(); 
   const router = useRouter();
-  // const { simulateAlert } = useWeaponAlert();
+  const { highlightedFeedId } = useWeaponAlert();
 
-  // const handleTestAlert = () => {
-  //   simulateAlert("Test Weapon Detected", { someDetail: "example" });
-  // };
-
-  
   useEffect(() => {
     const fetchCCTVFeeds = async () => {
       try {
@@ -131,8 +127,6 @@ const CCTVFeeds = () => {
       <h2 className="text-center mb-4" style={{ color: isDarkMode ? "#f8f9fa" : "#212529" }}>
         CCTV Feeds
       </h2>
-      {/* <WeaponAlertNotification />
-      <button onClick={handleTestAlert}>Simulate Alert</button> */}
 
       {loading ? (
         <p className="text-center">Loading CCTV feeds...</p>
@@ -143,7 +137,7 @@ const CCTVFeeds = () => {
       ) : (
         <>
           {user?.role != Role.User && (
-            <Row className="mb-3 d-flex justify-content-start"> {/* Flexbox for left alignment */}
+            <Row className="mb-3 d-flex justify-content-start"> 
               <Col xs="auto">
                 <Button
                   variant={cctvFeeds.length > 0 ? "danger" : "primary"}
@@ -161,16 +155,27 @@ const CCTVFeeds = () => {
             </Row>
           )}
 
-          <Row>
+          <Container
+            fluid
+            className="mt-3"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "1.5rem",
+              justifyContent: "center",
+            }}
+          >
             {cctvFeeds.map((feed) => (
-              <CCTVFeedCard
-                key={feed.id}
-                feed={feed}
-                isDarkMode={isDarkMode}
-                onClick={() => handleViewFeed(feed)}
-              />
+              <div key={feed.id}>
+                <CCTVFeedCard
+                  feed={feed}
+                  isDarkMode={isDarkMode}
+                  onClick={() => handleViewFeed(feed)}
+                  highlight={feed.id === highlightedFeedId}
+                />
+              </div>
             ))}
-          </Row>
+          </Container>
         </>
       )}
 

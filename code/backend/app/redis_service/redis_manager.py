@@ -21,10 +21,7 @@ def subscriber():
             if message and message["type"] == "message":
                 try:
                     data = json.loads(message["data"])  
-                    print(f"Received weapon alert: {data}", flush=True)
-
                     socketio.emit("weapon_alert", data)
-                    print("Emitted weapon alert to WebSocket clients", flush=True)
                 except json.JSONDecodeError as e:
                     print(f"Error decoding message: {e}")
     except Exception as e:
@@ -32,9 +29,7 @@ def subscriber():
 
 def start_redis_listener(channel='weapon_alerts'):
     try:
-        print("✅ Starting Redis listener...", flush=True)
         listener_thread = threading.Thread(target=subscriber, daemon=True)
         listener_thread.start()
-        print("✅ Redis listener started!", flush=True)
     except Exception as e:
         logging.error(f"Error starting Redis listener: {str(e)}")

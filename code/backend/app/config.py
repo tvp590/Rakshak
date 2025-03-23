@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-import logging
 
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path)
@@ -19,6 +18,7 @@ class Config:
     MAIL_USERNAME = os.environ.get('SMTP_MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('SMTP_MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('SMTP_MAIL_DEFAULT_SENDER')
+    MAIL_DEBUG = 0  
 
-    logging.getLogger('flask_mail').setLevel(logging.WARNING)
-    logging.getLogger('smtplib').setLevel(logging.WARNING)
+    CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
+    CELERY_BROKER_URL = os.environ.get('REDIS_URL')

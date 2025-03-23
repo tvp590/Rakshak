@@ -19,5 +19,5 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "[Info] Starting Server..."
-exec gunicorn --config /app/gunicorn.conf.py run:app
+exec gunicorn --config /app/gunicorn.conf.py app.run:app
 # exec python3 run.py
