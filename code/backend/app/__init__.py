@@ -6,6 +6,7 @@ from flask_cors import CORS
 from .socketio_events import socketio
 from .redis_service import start_redis_listener
 import os
+import logging
 
 def create_app():
     app = Flask(__name__)
@@ -51,6 +52,9 @@ def create_app():
         app.register_blueprint(cctv_bp, url_prefix='/api/cctv')
         app.register_blueprint(stream_bp, url_prefix='/api/stream')
         app.register_blueprint(alert_bp, url_prefix='/api/alert')
+
+        logging.getLogger("flask_mail").setLevel(logging.ERROR)
+        logging.getLogger("smtplib").setLevel(logging.ERROR)
 
     except Exception as e:
         print(f"[ERROR] Failed to initialize application: {str(e)}")

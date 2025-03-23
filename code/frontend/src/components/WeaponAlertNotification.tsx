@@ -1,25 +1,42 @@
 import { useWeaponAlert } from "@/context/WeaponAlertContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 const WeaponAlertNotification = () => {
-    const { alertMessage } = useWeaponAlert();
+    const { message } = useWeaponAlert();
+    const [isVisible, setIsVisible] = useState(false);
 
-    if (!alertMessage) return null;
+    useEffect(() => {
+        setIsVisible(!!message);
+    }, [message]);
 
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: alertMessage ? 1 : 0, scale: alertMessage ? 1 : 0.9 }}
-            transition={{ duration: 0.3 }}
-            className={`fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white py-3 px-6 rounded-lg shadow-lg text-sm font-semibold z-500 ${
-                alertMessage ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
-            style={{
-                minWidth: "200px",
-            }}
-        >
-            {alertMessage}
-        </motion.div>
+        <AnimatePresence>
+            {isVisible && (
+                <motion.div
+                    initial={{ opacity: 0, y: -40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.4 }}
+                    className="d-flex justify-content-between align-items-center position-fixed top-0 start-50 translate-middle-x mt-5 px-4 py-3 shadow rounded-3"
+                    style={{
+                        zIndex: 5000,
+                        backgroundColor: "#b30000",
+                        color: "white",
+                        width: "90vw",
+                        maxWidth: "600px",
+                        fontWeight: 500,
+                    }}
+                >
+                    <span>{message}</span>
+                    <button
+                        onClick={() => setIsVisible(false)}
+                        className="btn-close btn-close-white ms-3"
+                        aria-label="Close"
+                    ></button>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 };
 

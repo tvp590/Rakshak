@@ -118,6 +118,7 @@ export interface CCTVFeedCardProps {
     feed: CCTVFeed;
     isDarkMode: boolean;
     onClick: () => void;
+    highlight?: boolean;
 }
 
 export interface ActiveStream {
@@ -148,7 +149,6 @@ export type Alerts = {
     cctv_id: number;
     institution_id: number;
     location: string | null;
-    processed_frame: string | null;
 };
 
 export interface AlertsTableProps {
@@ -215,9 +215,15 @@ export interface InstitutionTableProps {
     onRemove: (institution: Institution) => void;
 }
 
-export interface WeaponAlertContextType {
-    alertMessage: string | null;
-    alertDetails: Record<string, unknown> | null;
-    simulateAlert:  (message: string, details: Record<string, unknown> )  => void;
+export interface WeaponAlertData {
+    cctv_id: number;
+    location: string;
 }
+
+export interface WeaponAlertContextType {
+    message: string | null;
+    triggerMessage: (msg: string) => void;
+    highlightedFeedId: number | null
+}
+
 

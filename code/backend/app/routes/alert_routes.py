@@ -28,6 +28,7 @@ def create_alert():
             status=data.get('status', 'Pending'),
             is_active=data.get('is_active', True),
             image_path=data.get('image_path'),
+            location=data.get('location'),
             institution_id=institution_id,
             cctv_id=cctv_ID
         )
@@ -97,6 +98,7 @@ def update_alert(alert_id):
         alert.status = data.get('status', alert.status)
         alert.is_active = data.get('is_active', alert.is_active)
         alert.image_path = data.get('image_path', alert.image_path)
+        alert.location = data.get('location', alert.location) 
 
         db.session.commit()
         return jsonify({"message": "Alert updated successfully", "alert": alert.serialize()}), 200
@@ -125,3 +127,21 @@ def delete_alert(alert_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 400
+    
+@alert_bp.route('/active', methods=['GET'])
+@login_required
+def get_active_alerts():
+    try:
+        institution_id = current_user.institution_id
+        if not institution_id:
+            return jsonify({"message": "Institution not found. Cannot get alerts"}), 404
+        
+        active_alerts = Alert.query.filter_by(institution_id=institution_id, is_active=True).all()
+
+        return jsonify({
+            "alerts": [alert.serialize() for alert in active_alerts]
+        }), 200
+    
+    except Exception as e:
+        print(f"Error fetching active alerts: {e}")
+        return jsonify({"message": str(e)}), 500

@@ -1,46 +1,47 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import SocketClient from "../components/SocketClient";
-import { WeaponAlertContextType } from "../types";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import SocketClient from "@/components/SocketClient";
+import { WeaponAlertContextType, WeaponAlertData } from "../types";
 
-const defaultContextValue: WeaponAlertContextType = {
-    alertMessage: null,
-    alertDetails: null,
-    simulateAlert : () => {}
-};
-
-const WeaponAlertContext = createContext<WeaponAlertContextType>(defaultContextValue);
+const WeaponAlertContext = createContext<WeaponAlertContextType>({
+    message: null,
+    triggerMessage: () => {},
+    highlightedFeedId: null,
+});
 
 export const WeaponAlertProvider = ({ children }: { children: ReactNode }) => {
-    const [alertMessage, setAlertMessage] = useState<string | null>(null);
-    const [alertDetails, setAlertDetails] = useState< Record<string, unknown> | null>(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [highlightedFeedId, setHighlightedFeedId] = useState<number | null>(null);
     const socket = SocketClient();
+
+    const triggerMessage = (msg: string) => {
+        setMessage(msg);
+        setTimeout(() => {
+            setMessage(null);
+        }, 15000);
+    };
 
     useEffect(() => {
         if (!socket) return;
 
-        socket.on("weapon_alert", (data) => {
-            console.log("Weapon detected:", data);
+        const handleWeaponAlert = (data: WeaponAlertData) => {
+            const cctvId = data?.cctv_id ?? "Unknown";
+            const location = data?.location ?? "Unknown";
+            triggerMessage(`🚨 Weapon detected!  CCTV ID: ${cctvId}, Location: ${location}`);
+            if (cctvId) {
+                setHighlightedFeedId(cctvId);
+                setTimeout(() => setHighlightedFeedId(null), 15000);
+            }
+        };
 
-            setAlertMessage(data.message || "🚨 Weapon detected!");
-
-            setAlertDetails(data);
-
-            setTimeout(() => setAlertMessage(null), 15000);
-        });
+        socket.on("weapon_alert", handleWeaponAlert);
 
         return () => {
             socket.off("weapon_alert");
         };
     }, [socket]);
 
-    const simulateAlert = (message: string, details: Record<string, unknown> ) => {
-        setAlertMessage(message);
-        setAlertDetails(details);
-        setTimeout(() => setAlertMessage(null), 15000);
-    };
-
     return (
-        <WeaponAlertContext.Provider value={{ alertMessage, alertDetails , simulateAlert}}>
+        <WeaponAlertContext.Provider value={{ message, triggerMessage, highlightedFeedId }}>
             {children}
         </WeaponAlertContext.Provider>
     );

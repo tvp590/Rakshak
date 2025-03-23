@@ -1,12 +1,10 @@
 import logging
 from celery import shared_task
-from app.redis_service import publish_message
 from app.services import capture_frames
-from app.socketio_events import socketio
-from app.services.tasks.email_task import send_alert_email
 import cv2
 from ultralytics import YOLO
-import base64
+from .process_alert_task import save_alert_and_notify
+from ..save_image import save_image
 
 @shared_task(queue="celery")
 def start_yolo_detection_task(cctv_id, rtsp_url, location, institution_id):
@@ -26,11 +24,6 @@ def start_yolo_detection_task(cctv_id, rtsp_url, location, institution_id):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     model = YOLO(YOLO_MODEL)
 
-    def encode_frame_to_base64(frame):
-        _, buffer = cv2.imencode('.jpg', frame)
-        frame_bytes = buffer.tobytes()
-        return base64.b64encode(frame_bytes).decode('utf-8')
-
     try:
         frame_count = FRAME_RESET
 
@@ -42,9 +35,8 @@ def start_yolo_detection_task(cctv_id, rtsp_url, location, institution_id):
                 results = model(resized_frame, verbose=False)
                 detections = results[0].boxes.data.numpy() if len(results[0].boxes) > 0 else []
 
-                detected = False
-                weapon_type = "Unknown"
-                print(detections, flush=True)
+                detected,weapon_type = False,"Unknown"
+
                 for detection in detections:
                     class_id = int(detection[5])
                     confidence = detection[4]
@@ -56,17 +48,12 @@ def start_yolo_detection_task(cctv_id, rtsp_url, location, institution_id):
 
                 if detected:
                     processed_frame = results[0].plot()
-                    alert_message = {
-                        'message': 'Weapon detected!',
-                        'camera_id': cctv_id,
-                        'location': location,
-                        'weapon_type': weapon_type,
-                        'institution_id': institution_id
-                    }
-                    publish_message("weapon_alerts",alert_message)
-                    send_alert_email.apply_async(args=(cctv_id, location))
-
+                    image_path = save_image(processed_frame,institution_id) 
+                    save_alert_and_notify.apply_async(
+                        args=(cctv_id, location, weapon_type, image_path, institution_id)
+                    )
                     frame_count = FRAME_RESET
+                    
         return {"status": "completed"}
 
     except Exception as e:

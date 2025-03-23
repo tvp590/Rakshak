@@ -4,7 +4,7 @@ from app.extensions import mail
 from celery import shared_task
 
 @shared_task(queue="celery")
-def send_alert_email(camera_id, location, recipient=None, subject="Weapon Detected Alert"):
+def send_alert_email(camera_id, location, image_path, recipient=None, subject="Weapon Detected Alert"):
     try:
         recipient = recipient or os.getenv("SMTP_MAIL_DEFAULT_RECIPIENT")
 
@@ -40,6 +40,16 @@ def send_alert_email(camera_id, location, recipient=None, subject="Weapon Detect
         msg = Message(subject, recipients=[recipient])
         msg.body = body
         msg.html = body
-        mail.send(msg)
+
+        if os.path.exists(image_path):
+            with open(image_path, 'rb') as img_file:
+                img_data = img_file.read()
+                msg.attach(f"{os.path.basename(image_path)}", "image/jpeg", img_data)
+
+            mail.send(msg)
+            return {"status": "email_sent"}
+        else:
+            return {"status": "error", "error": "Image file not found"}
     except Exception as e:
         print(f"Error sending email: {e}")
+        return {"status": "error", "error": str(e)}

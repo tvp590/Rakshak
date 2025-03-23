@@ -21,11 +21,9 @@ def handle_weapon_alert(data):
     emit(
         "weapon_alert",
         {
-            "message": "Weapon detected!",
-            "camera_id": data["camera_id"],
             "location": data["location"],
             "weapon_type": data["weapon_type"],
-            "institution_id": data["institution_id"]
+            "cctv_id": data["cctv_id"]
         },
         broadcast=True
     )

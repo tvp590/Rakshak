@@ -7,6 +7,7 @@ import { ThemeProvider } from "../context/themeContext";
 import { UserProvider, useUser } from "../context/userContext";
 import axios from "axios";
 import { WeaponAlertProvider } from "../context/WeaponAlertContext";
+import WeaponAlertNotification from "../components/WeaponAlertNotification";
 
 function AppContent({ Component, pageProps, router }: AppProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -49,6 +50,7 @@ export default function App(appProps: AppProps) {
     <UserProvider>
       <ThemeProvider>
         <WeaponAlertProvider>
+            <WeaponAlertNotification />
             <AppContent {...appProps} />
           </WeaponAlertProvider>
       </ThemeProvider>

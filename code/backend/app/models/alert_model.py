@@ -12,6 +12,7 @@ class Alert(db.Model):
     status = db.Column(db.String(20), default="Pending", nullable=False)  # "Pending", "Resolved", "False Positive"
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     image_path = db.Column(db.String(255), nullable=True)
+    location = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
 
@@ -28,6 +29,7 @@ class Alert(db.Model):
             "status": self.status,
             "is_active": self.is_active,
             "image_path": self.image_path,
+            "location": self.location,
             "created_at" : self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "cctv_id": self.cctv_id,

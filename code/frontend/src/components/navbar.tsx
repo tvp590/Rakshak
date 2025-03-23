@@ -20,7 +20,7 @@ const AppNavbar = ({ isLoggedIn, onLogout}: NavbarProps) => {
       <Container>
         <Row className="w-100">
           <Col xs={6} sm={6} md={4}>
-            <Navbar.Brand href="/" className="text-primary fw-bold">
+            <Navbar.Brand href="/cctvFeeds" className="text-primary fw-bold">
               Rakshak
             </Navbar.Brand>
           </Col>
@@ -28,9 +28,8 @@ const AppNavbar = ({ isLoggedIn, onLogout}: NavbarProps) => {
           <Col xs={6} sm={6} md={8} className="d-flex justify-content-end">
             {/* Desktop Nav */}
             <Nav className="d-none d-lg-flex align-items-center">
-              {isLoggedIn && <Nav.Link href="/dashboard">Dashboard</Nav.Link>}
               <Nav.Link href="/aboutUs">About Us</Nav.Link>
-              <Nav.Link href="/contact">Contact Us</Nav.Link>
+              <Nav.Link href="/contactUs">Contact Us</Nav.Link>
               <NavDropdown title="Account" id="nav-dropdown">
                 {isLoggedIn ? (
                   <NavDropdown.Item onClick={onLogout}>Logout</NavDropdown.Item>
@@ -66,9 +65,8 @@ const AppNavbar = ({ isLoggedIn, onLogout}: NavbarProps) => {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Nav className="flex-column">
-            {isLoggedIn && <Nav.Link href="/dashboard">Dashboard</Nav.Link>}
             <Nav.Link href="/aboutUs">About Us</Nav.Link>
-            <Nav.Link href="/contact">Contact Us</Nav.Link>
+            <Nav.Link href="/contactUs">Contact Us</Nav.Link>
             <NavDropdown title="Account" id="offcanvas-nav-dropdown">
               {isLoggedIn ? (
                 <NavDropdown.Item onClick={onLogout}>Logout</NavDropdown.Item>
