@@ -24,8 +24,8 @@ def create_app():
             message_queue='redis://redis_container:6379/0',
             cors_allowed_origins=["http://localhost:3000", "http://127.0.0.1:5001", "http://localhost", "http://localhost:5001","http://flask_app:5001","http://next_app:3000"],
             async_mode="threading",
-            logger=True, 
-            engineio_logger=True
+            logger=False, 
+            engineio_logger=False
         )
 
         db.init_app(app)
@@ -55,6 +55,8 @@ def create_app():
 
         logging.getLogger("flask_mail").setLevel(logging.ERROR)
         logging.getLogger("smtplib").setLevel(logging.ERROR)
+        logging.getLogger('engineio').setLevel(logging.ERROR)
+        logging.getLogger('socketio').setLevel(logging.ERROR)
 
     except Exception as e:
         print(f"[ERROR] Failed to initialize application: {str(e)}")

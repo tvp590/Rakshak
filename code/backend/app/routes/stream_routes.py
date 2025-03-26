@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from flask_login import login_required, current_user
 from ..utils import has_permission
-from ..services import start_all_streams, stop_all_streams
-from ..models import CCTV, RoleEnum, get_cctv_details
+from ..services import start_all_streams, stop_all_streams, start_individual_stream , stop_individual_stream
+from ..models import CCTV, RoleEnum, get_cctv_details, get_cctv_by_id, create_rtsp_url
 import os
 from ..socketio_events import socketio
 
@@ -99,11 +99,13 @@ def stop_streams():
                     {'cctv_id': 1, 'rtsp_url': LOCAL_RTSP_URL, 'location': 'Test Location 1'},
                     {'cctv_id': 2, 'rtsp_url': LOCAL_2_RTSP_URL, 'location': 'Test Location 2'}
         ]
+        
+        cctv_ids = [cctv['cctv_id'] for cctv in cctv_details]
 
         if not cctv_details:
             return({"error" : "No CCTV and RTSP URLs found. Aborting streaming."}), 400
 
-        stop_all_streams(cctv_details)
+        stop_all_streams(cctv_ids)
 
         return jsonify({"message": "Streams stopped successfully!"}), 200
     except Exception as e:
@@ -119,3 +121,45 @@ def serve_playlist(stream_id):
         return send_from_directory(stream_dir, "playlist.m3u8", mimetype='application/vnd.apple.mpegurl')
     except Exception as e:
         return jsonify({"error": f"Failed to serve playlist: {str(e)}"}), 500
+    
+
+@stream_bp.route('/start-stream/<int:cctv_id>', methods=['POST'])
+@login_required
+def start_individual_stream_route(cctv_id):
+    try:
+        cctv = get_cctv_by_id(cctv_id)
+        if not cctv:
+            return jsonify({"error": "CCTV not found"}), 404
+        
+        if current_user.role == RoleEnum.superAdmin:
+            institution_id = request.json.get("institution_id")
+        else:
+            institution_id = current_user.institution_id
+
+        if not institution_id:
+            return jsonify({"error": "Institution ID is required"}), 400
+        
+        if institution_id != cctv.institution_id:
+            return jsonify({"error": "Unauthorized access to this CCTV"}), 403
+
+        rtsp_URL = create_rtsp_url(cctv.username, cctv.password, cctv.ip_address)
+
+        start_individual_stream(cctv_id, rtsp_URL, cctv.location, institution_id)
+
+        return jsonify({"message": f"Stream {cctv_id} started"}), 200
+    
+    except Exception as e:
+        print(f"Error starting stream {cctv_id}: {str(e)}")
+        return jsonify({"error": "Failed to start individual stream"}), 500
+    
+
+@stream_bp.route('/stop-stream/<int:cctv_id>', methods=['POST'])
+@login_required
+def stop_individual_stream_route(cctv_id):
+    try:
+        stop_individual_stream(cctv_id)
+        return jsonify({"message": f"Stream {cctv_id} stopped"}), 200
+
+    except Exception as e:
+        print(f"Error stopping stream {cctv_id}: {str(e)}")
+        return jsonify({"error": "Failed to stop individual stream"}), 500
