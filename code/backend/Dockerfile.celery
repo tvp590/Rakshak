@@ -14,10 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-# RUN useradd -ms /bin/bash celeryuser
-# RUN chown -R celeryuser:celeryuser /app
-# RUN chmod -R 755 /app
-
-# USER celeryuser
-
 CMD ["celery", "-A", "app.run:celery_app", "worker", "--loglevel=info"]

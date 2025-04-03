@@ -50,7 +50,7 @@ const ManageUsers = () => {
 
   const handleAddUser = () => {
     setSelectedUser(null);
-    setFormData({ name: "", email: "", password: "", role: Role.User, institution_id: 0 });
+    setFormData({ name: "", email: "", password: "", role: Role.User, institution_id: user?.institution_id ?? 0 });
     setShowModal(true);
   };
 

@@ -30,7 +30,7 @@ def process_alert_result(alert_result, location, weapon_type, cctv_id, image_pat
         }
         publish_message("weapon_alerts", alert_message)
 
-        # send_alert_email.apply_async(args=(cctv_id, location, image_path))
+        send_alert_email.apply_async(args=(cctv_id, location, image_path))
 
         return {"status": "completed" if db_status in ["success", "duplicate"] else "db_error"}
     

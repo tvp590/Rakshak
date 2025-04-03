@@ -20,4 +20,3 @@ fi
 
 echo "[Info] Starting Server..."
 exec gunicorn --config /app/gunicorn.conf.py app.run:app
-# exec python3 run.py

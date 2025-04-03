@@ -5,7 +5,8 @@ from celery.result import AsyncResult
 from ..extensions import redis_client
 from .tasks.stream_task import start_stream_task
 from .tasks.detection_task import start_yolo_detection_task
-
+from ..socketio_events import socketio
+from ..utils import wait_for_hls_ready
 
 def _is_stream_running(cctv_id):
     redis_key = f"tasks:{cctv_id}"
@@ -73,6 +74,7 @@ def stop_individual_stream(cctv_id):
 
 
 def start_all_streams(cctv_details, institution_id):
+    all_ready = []
     for cctv in cctv_details:
         start_individual_stream(
             cctv_id=cctv["cctv_id"],
@@ -80,8 +82,16 @@ def start_all_streams(cctv_details, institution_id):
             location=cctv["location"],
             institution_id=institution_id
         )
+        all_ready.append(cctv["cctv_id"])
+    
+    for cctv_id in all_ready:
+        success = wait_for_hls_ready(cctv_id)
+        if not success:
+            logging.warning(f"HLS stream for CCTV {cctv_id} not ready in time.")
 
+    socketio.emit("stream_status", {"active": True})
 
 def stop_all_streams(cctv_ids):
     for cctv_id in cctv_ids:
         stop_individual_stream(cctv_id)
+    socketio.emit("stream_status", {"active": False})

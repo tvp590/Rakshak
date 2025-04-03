@@ -4,7 +4,7 @@ from ..utils import has_permission
 from ..services import start_all_streams, stop_all_streams, start_individual_stream , stop_individual_stream
 from ..models import CCTV, RoleEnum, get_cctv_details, get_cctv_by_id, create_rtsp_url
 import os
-from ..socketio_events import socketio
+from ..extensions import redis_client
 
 stream_bp = Blueprint('stream', __name__)
 
@@ -24,14 +24,7 @@ def start_streams():
         if not has_permission(institution_id=institution_id):
             return jsonify({"message": "Unauthorized access"}), 403
         
-        # cctv_details = get_cctv_details(institution_id)
-
-        LOCAL_RTSP_URL = 'app/videos/video1_appletv1.mp4'  
-        LOCAL_2_RTSP_URL = 'app/videos/invideo_ai_720_.mp4'
-        cctv_details = [
-                    {'cctv_id': 1, 'rtsp_url': LOCAL_RTSP_URL, 'location': 'Test Location 1'},
-                    {'cctv_id': 2, 'rtsp_url': LOCAL_2_RTSP_URL, 'location': 'Test Location 2'}
-        ]
+        cctv_details = get_cctv_details(institution_id)
 
         if not cctv_details:
             return({"error" : "No CCTV and RTSP URLs found. Aborting streaming."}), 400
@@ -55,21 +48,19 @@ def get_active_streams():
         if not institution_id:
             return jsonify({"error": "Institution ID is required"}), 400
         
-        active_streams = CCTV.query.filter_by(institution_id=institution_id, is_active=True).all()
-        if not active_streams:
-            return jsonify({"message": "No active CCTV streams found"}), 200
-        
-        streams = []
-        for cctv in active_streams:
-            streams.append(
-                {
+        all_cctvs = CCTV.query.filter_by(institution_id=institution_id).all()
+        active_streams = []
+
+        for cctv in all_cctvs:
+            redis_key = f"tasks:{cctv.id}"
+            if redis_client.exists(redis_key):
+                active_streams.append({
                     "cctv_id": cctv.id,
                     "stream_url": f"/streams/{cctv.id}/playlist.m3u8",
                     "location": cctv.location
-                }
-            )
+                })
 
-        return jsonify({"active_streams": streams}), 200
+        return jsonify({"active_streams": active_streams}), 200
     
     except Exception as e:
         print("Error fetching active streams:", e)
@@ -91,15 +82,8 @@ def stop_streams():
         if not has_permission(institution_id=institution_id):
             return jsonify({"message": "Unauthorized access"}), 403
 
-        # cctv_details = get_cctv_details(institution_id)
+        cctv_details = get_cctv_details(institution_id)
 
-        LOCAL_RTSP_URL = 'app/videos/video1_appletv1.mp4'  
-        LOCAL_2_RTSP_URL = 'app/videos/invideo_ai_720_.mp4'
-        cctv_details = [
-                    {'cctv_id': 1, 'rtsp_url': LOCAL_RTSP_URL, 'location': 'Test Location 1'},
-                    {'cctv_id': 2, 'rtsp_url': LOCAL_2_RTSP_URL, 'location': 'Test Location 2'}
-        ]
-        
         cctv_ids = [cctv['cctv_id'] for cctv in cctv_details]
 
         if not cctv_details:

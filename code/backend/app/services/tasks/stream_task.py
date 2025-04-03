@@ -17,6 +17,7 @@ def start_stream_task(stream_id, rtsp_url):
     command = [
         "ffmpeg",
         "-loglevel", "info",
+        "-rtsp_transport", "tcp",
         "-re" if is_local_file else "",
         "-i", rtsp_url,
         "-c:v", "libx264",
@@ -24,11 +25,11 @@ def start_stream_task(stream_id, rtsp_url):
         "-tune", "zerolatency",
         "-f", "hls",
         "-hls_time", "2",
-        "-hls_list_size", "5",
+        "-hls_list_size", "3",
         "-hls_flags", "delete_segments",
+        "-hls_segment_filename", os.path.join(output_dir, "segment_%03d.ts"),
         output_path
     ]
-    #  "-rtsp_transport", "tcp",
     command = [arg for arg in command if arg]
 
     try:

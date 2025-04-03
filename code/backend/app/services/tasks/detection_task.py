@@ -32,7 +32,7 @@ def start_yolo_detection_task(cctv_id, rtsp_url, location, institution_id):
                 resized_frame = cv2.resize(frame, (640, 640))
                 results = model(resized_frame, verbose=False)
                 detections = results[0].boxes.data.numpy() if len(results[0].boxes) > 0 else []
-
+                print(detections, flush=True)
                 detected = False
                 for detection in detections:
                     class_id = int(detection[5])

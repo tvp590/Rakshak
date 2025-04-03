@@ -23,12 +23,16 @@ const CCTVForm = ({
     ip_address: initialData?.ip_address || "",
     is_active : initialData?.is_active || false,
     id: initialData?.id || 0,
-    institution_id : initialData?.institution_id || 0
+    institution_id : initialData?.institution_id || user?.institution_id || 0
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (name === "is_active") {
+      setFormData({ ...formData, [name]: value === "true" });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = () => {
@@ -108,6 +112,22 @@ const CCTVForm = ({
             placeholder="Institution ID"
             disabled={!isSuperAdmin} 
           />
+          <Form.Group controlId="is_active" className="mb-3">
+            <Form.Label>CCTV Active</Form.Label>
+            <Form.Select
+              name="is_active"
+              value={formData.is_active.toString()}
+              onChange={handleChange}
+              className="py-2 px-4 border-2 rounded-2 shadow-sm bg-light text-black"
+              style={{
+                transition: 'all 0.3s ease',
+                backgroundColor: '#f8f9fa',
+              }}
+            >
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </Form.Select>
+          </Form.Group>
         </Form>
       </Modal.Body>
       <Modal.Footer
