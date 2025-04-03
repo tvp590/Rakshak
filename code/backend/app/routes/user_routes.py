@@ -98,10 +98,11 @@ def update_user(id):
 
         user.name = data.get("name", user.name)
         user.email = data.get("email", user.email)
-        role = data.get("role", user.role)
-        if role and role not in [r.value for r in RoleEnum]:
-            return jsonify({"message": "Invalid role"}), 400
-        user.role = RoleEnum(role) 
+        if "role" in data:
+            role = data["role"]
+            if role not in [r.value for r in RoleEnum]:
+                return jsonify({"message": "Invalid role"}), 400
+            user.role = RoleEnum(role)
 
         user.institution_id = data.get("institution_id", user.institution_id)
         if data.get("password"):

@@ -9,46 +9,43 @@ import { useUser } from "../context/userContext";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { useWeaponAlert } from "../context/WeaponAlertContext";
-
+import SocketClient from "../components/SocketClient";
 
 const CCTVFeeds = () => {
   const { isDarkMode } = useTheme();
   const [selectedFeed, setSelectedFeed] = useState<CCTVFeed | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [cctvFeeds, setCctvFeeds] = useState<CCTVFeed[]>([]);
+  const [visibleFeeds, setVisibleFeeds] = useState<CCTVFeed[]>([]);
   const [startingStreams, setStartingStreams] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useUser(); 
+  const [isStreaming, setIsStreaming] = useState(false);
+  const { user } = useUser();
   const router = useRouter();
   const { highlightedFeedId } = useWeaponAlert();
+  const socket = SocketClient();
 
   useEffect(() => {
     const fetchCCTVFeeds = async () => {
       try {
         const response = await axios.get<ActiveStreamsResponse>("/api/stream/active-streams", {
-          withCredentials: true
+          withCredentials: true,
         });
 
-        if (response.status === 200) {
-          const data = response.data;
-          if (data.active_streams && data.active_streams.length > 0) {
-            setCctvFeeds(
-              data.active_streams.map((stream,index) => ({
-                id: stream.cctv_id,
-                cameraName: `Camera ${index + 1}`,
-                location: stream.location,
-                streamURL: stream.stream_url,
-              }))
-            );
-          } else{
-            setError("No active CCTV streams found.");
-          }
-      } 
-    }
-      catch (err) {
-        console.error(err); 
-        setError("An error occurred while fetching streams.");
+        const data = response.data;
+        const feeds =
+          data.active_streams?.map((stream, index) => ({
+            id: stream.cctv_id,
+            cameraName: `Camera ${index + 1}`,
+            location: stream.location,
+            streamURL: stream.stream_url,
+          })) || [];
+
+        setVisibleFeeds(feeds);
+        setIsStreaming(feeds.length > 0);
+      } catch (err) {
+        console.error(err);
+        setError("An error occurred while fetching CCTV feeds.");
       } finally {
         setLoading(false);
       }
@@ -59,25 +56,49 @@ const CCTVFeeds = () => {
 
   useEffect(() => {
     if (user === null) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [router, user]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleStreamStatus = async () => {
+      try {
+        const response = await axios.get<ActiveStreamsResponse>("/api/stream/active-streams", {
+          withCredentials: true,
+        });
+
+        const data = response.data;
+        const feeds =
+          data.active_streams?.map((stream, index) => ({
+            id: stream.cctv_id,
+            cameraName: `Camera ${index + 1}`,
+            location: stream.location,
+            streamURL: stream.stream_url,
+          })) || [];
+
+        setVisibleFeeds(feeds);
+        setIsStreaming(feeds.length > 0);
+        setStartingStreams(false);
+      } catch (err) {
+        console.error("Error updating stream status via socket:", err);
+        setError("Failed to sync stream status.");
+        setStartingStreams(false);
+      }
+    };
+
+    socket.on("stream_status", handleStreamStatus);
+    return () => {
+      socket.off("stream_status", handleStreamStatus);
+    };
+  }, [socket]);
+
   const handleStartStreams = async () => {
     setStartingStreams(true);
-
     try {
-      const response = await axios.post(
-        "/api/stream/start-streams",
-        {},
-        { withCredentials: true }
-      );
-
-      if (response.status === 200) {
-        setError(null);
-        setCctvFeeds([]); 
-        window.location.reload(); 
-      } else {
+      const response = await axios.post("/api/stream/start-streams", {}, { withCredentials: true });
+      if (response.status !== 200) {
         setError("Failed to start streams.");
       }
     } catch (error) {
@@ -87,23 +108,17 @@ const CCTVFeeds = () => {
       setStartingStreams(false);
     }
   };
+  
 
   const handleStopStreams = async () => {
     setStartingStreams(true);
-  
     try {
-      const response = await axios.post(
-        "/api/stream/stop-streams",
-        {},
-        { withCredentials: true }
-      );
-  
-      if (response.status === 200) {
-        setCctvFeeds([]);
-        window.location.reload();
-      } else {
+      const response = await axios.post("/api/stream/stop-streams", {}, { withCredentials: true });
+      if (response.status !== 200) {
         setError("Failed to stop streams.");
       }
+      setVisibleFeeds([]);
+      setIsStreaming(false);
     } catch (error) {
       console.error(error);
       setError("An error occurred while stopping streams.");
@@ -111,7 +126,7 @@ const CCTVFeeds = () => {
       setStartingStreams(false);
     }
   };
-  
+
   const handleViewFeed = (feed: CCTVFeed) => {
     setSelectedFeed(feed);
     setShowModal(true);
@@ -127,25 +142,36 @@ const CCTVFeeds = () => {
       <h2 className="text-center mb-4" style={{ color: isDarkMode ? "#f8f9fa" : "#212529" }}>
         CCTV Feeds
       </h2>
-
+  
       {loading ? (
-        <p className="text-center">Loading CCTV feeds...</p>
-      ) : error ? (
-        <Alert variant="danger" className="text-center">
-          {error}
-        </Alert>
+        <div className="text-center">
+          <Spinner animation="border" role="status" size="sm" className="me-2" />
+          <span>Loading CCTV feeds...</span>
+        </div>
+      ) : startingStreams ? (
+        <div className="text-center mt-2">
+          <Spinner animation="border" role="status" size="sm" className="me-2" />
+          <span>Starting streams...</span>
+        </div>
       ) : (
         <>
-          {user?.role != Role.User && (
-            <Row className="mb-3 d-flex justify-content-start"> 
+          {error && (
+            <Alert variant="danger" className="text-center">
+              {error}
+            </Alert>
+          )}
+  
+          {user?.role !== Role.User && (
+            <Row className="mb-3 d-flex justify-content-start">
               <Col xs="auto">
                 <Button
-                  variant={cctvFeeds.length > 0 ? "danger" : "primary"}
-                  onClick={cctvFeeds.length > 0 ? handleStopStreams : handleStartStreams}
+                  variant={isStreaming ? "danger" : "primary"}
+                  onClick={isStreaming ? handleStopStreams : handleStartStreams}
+                  disabled={startingStreams}
                 >
                   {startingStreams ? (
                     <Spinner size="sm" animation="border" />
-                  ) : cctvFeeds.length > 0 ? (
+                  ) : isStreaming ? (
                     "Stop Streaming"
                   ) : (
                     "Start Streaming"
@@ -154,18 +180,33 @@ const CCTVFeeds = () => {
               </Col>
             </Row>
           )}
-
+  
+          {visibleFeeds.length === 0 && !startingStreams && (
+            <Alert variant="secondary" className="text-center">
+              {user?.role === Role.User ? (
+                <>No active CCTV streams available at the moment.</>
+              ) : (
+                <>
+                  No active CCTV streams found.
+                  <br />
+                  You can start streaming by pressing the <strong>Start Streaming</strong> button.
+                </>
+              )}
+            </Alert>
+          )}
+  
           <Container
             fluid
             className="mt-3"
             style={{
-              display: "grid",
+              display: visibleFeeds.length === 0 ? "none" : "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
               gap: "1.5rem",
               justifyContent: "center",
+              transition: "opacity 0.5s ease-in-out",
             }}
           >
-            {cctvFeeds.map((feed) => (
+            {visibleFeeds.map((feed) => (
               <div key={feed.id}>
                 <CCTVFeedCard
                   feed={feed}
@@ -178,7 +219,7 @@ const CCTVFeeds = () => {
           </Container>
         </>
       )}
-
+  
       <CCTVFeedModal
         showModal={showModal}
         selectedFeed={selectedFeed}

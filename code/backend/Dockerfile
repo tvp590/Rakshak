@@ -12,8 +12,6 @@ COPY . /app/
 
 EXPOSE 5001
 
-COPY app/videos/ /app/videos/
-
 ENV FLASK_APP=run.py
 
 COPY gunicorn.conf.py /app/gunicorn.conf.py

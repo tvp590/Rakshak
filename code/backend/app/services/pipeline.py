@@ -1,100 +1,97 @@
 import logging
-from ..extensions import redis_client
+import os
+import signal
 from celery.result import AsyncResult
+from ..extensions import redis_client
 from .tasks.stream_task import start_stream_task
 from .tasks.detection_task import start_yolo_detection_task
+from ..socketio_events import socketio
+from ..utils import wait_for_hls_ready
+
+def _is_stream_running(cctv_id):
+    redis_key = f"tasks:{cctv_id}"
+    return redis_client.exists(redis_key)
 
 
-def start_all_streams(cctv_details, institution_id):
-    try:
-        for cctv in cctv_details:
-            task_ids = redis_client.hgetall(f"tasks:{cctv['cctv_id']}")
-            if task_ids:
-                logging.info(f"Stream for CCTV {cctv['cctv_id']} is already running.")
-                continue
-
-            try:
-                stream_task = start_stream_task.apply_async(args=(cctv['cctv_id'], cctv['rtsp_url']))
-                yolo_task = start_yolo_detection_task.apply_async(args=(cctv['cctv_id'], cctv['rtsp_url'], cctv['location'], institution_id))
-                    
-                redis_client.hset(f"tasks:{cctv['cctv_id']}", "stream_task_id", stream_task.id)
-                redis_client.hset(f"tasks:{cctv['cctv_id']}", "yolo_task_id", yolo_task.id)
-                logging.info(f"Started tasks for CCTV {cctv['cctv_id']} with task IDs: {stream_task.id}, {yolo_task.id}")
-
-            except Exception as e:
-                logging.error(f"Error starting tasks for CCTV {cctv['cctv_id']}: {str(e)}")
-
-    except Exception as e:
-        logging.error(f"Error in start_all_streams: {str(e)}")        
+def _save_task_to_redis(cctv_id, stream_task_id, yolo_task_id):
+    redis_key = f"tasks:{cctv_id}"
+    redis_client.hset(redis_key, mapping={
+        "stream_task_id": stream_task_id,
+        "yolo_task_id": yolo_task_id
+    })
 
 
-def stop_all_streams(cctv_ids):
-    try:
-        for cctv_id in cctv_ids:
-            task_ids = redis_client.hgetall(f"tasks:{cctv_id}")
-            if task_ids:
-                stream_task_id = task_ids.get(b"stream_task_id")
-                yolo_task_id = task_ids.get(b"yolo_task_id")
-                
-                stream_task = AsyncResult(stream_task_id)
-                yolo_task = AsyncResult(yolo_task_id)
-
-                if stream_task.state != 'SUCCESS':
-                    stream_task.revoke(terminate=True)
-                if yolo_task.state != 'SUCCESS':
-                    yolo_task.revoke(terminate=True)
-
-                redis_client.hdel(f"tasks:{cctv_id}", "stream_task_id", "yolo_task_id")
-                logging.info(f"Stopped tasks for CCTV {cctv_id}")
-                
-    except Exception as e:
-        logging.error(f"Error stopping all streams: {str(e)}")
+def _revoke_celery_task(task_id):
+    task = AsyncResult(task_id)
+    if task.state not in ("SUCCESS", "FAILURE", "REVOKED"):
+        task.revoke(terminate=True, signal="SIGTERM")
+        logging.info(f"Revoked task {task_id}")
 
 
 def start_individual_stream(cctv_id, rtsp_url, location, institution_id):
+    if _is_stream_running(cctv_id):
+        logging.info(f"Stream for CCTV {cctv_id} is already running.")
+        return
+
     try:
-        task_ids = redis_client.hgetall(f"tasks:{cctv_id}")
-        if task_ids:
-            logging.info(f"Stream for CCTV {cctv_id} is already running.")
-            return
-        
-        try:
-            stream_task = start_stream_task.apply_async(args=(cctv_id, rtsp_url))
-            yolo_task = start_yolo_detection_task.apply_async(args=(cctv_id, rtsp_url, location, institution_id))
+        stream_task = start_stream_task.apply_async(args=(cctv_id, rtsp_url))
+        yolo_task = start_yolo_detection_task.apply_async(
+            args=(cctv_id, rtsp_url, location, institution_id)
+        )
 
-            redis_client.hset(f"tasks:{cctv_id}", "stream_task_id", stream_task.id)
-            redis_client.hset(f"tasks:{cctv_id}", "yolo_task_id", yolo_task.id)
+        _save_task_to_redis(cctv_id, stream_task.id, yolo_task.id)
 
-            logging.info(f"Started tasks for CCTV {cctv_id} with task IDs: {stream_task.id}, {yolo_task.id}")
-
-        except Exception as e:
-            logging.error(f"Error starting tasks for CCTV {cctv_id}: {str(e)}")
-
+        logging.info(f"Started tasks for CCTV {cctv_id}: {stream_task.id}, {yolo_task.id}")
     except Exception as e:
-        logging.error(f"Error in start_individual_stream: {str(e)}")
+        logging.error(f"Error starting stream for CCTV {cctv_id}: {str(e)}")
 
 
 def stop_individual_stream(cctv_id):
+    redis_key = f"tasks:{cctv_id}"
+    task_data = redis_client.hgetall(redis_key)
+
+    if not task_data:
+        logging.info(f"No tasks found for CCTV {cctv_id}")
+        return
+
     try:
-        task_ids = redis_client.hgetall(f"tasks:{cctv_id}")
-        if not task_ids:
-            logging.info(f"No tasks found for CCTV {cctv_id}")
-            return
-        
-        stream_task_id = task_ids.get(b"stream_task_id")
-        yolo_task_id = task_ids.get(b"yolo_task_id")
+        if b"ffmpeg_pid" in task_data:
+            pid = int(task_data[b"ffmpeg_pid"])
+            try:
+                os.killpg(pid, signal.SIGKILL)
+                logging.info(f"Killed FFmpeg for CCTV {cctv_id}")
+            except Exception as e:
+                logging.error(f"Error killing FFmpeg: {str(e)}")
 
-        stream_task = AsyncResult(stream_task_id)
-        yolo_task = AsyncResult(yolo_task_id)
+        for task_key in [b"stream_task_id", b"yolo_task_id"]:
+            if task_key in task_data:
+                _revoke_celery_task(task_data[task_key].decode())
 
-        if stream_task.state != 'SUCCESS':
-            stream_task.revoke(terminate=True)
-        if yolo_task.state != 'SUCCESS':
-            yolo_task.revoke(terminate=True)
-
-        redis_client.hdel(f"tasks:{cctv_id}", "stream_task_id", "yolo_task_id")
-
-        logging.info(f"Stopped tasks for CCTV {cctv_id}")
-    
+        redis_client.delete(redis_key)
+        logging.info(f"Cleaned up Redis for CCTV {cctv_id}")
     except Exception as e:
-        logging.error(f"Error stopping tasks for CCTV {cctv_id}: {str(e)}")
+        logging.error(f"Error stopping stream for CCTV {cctv_id}: {str(e)}")
+
+
+def start_all_streams(cctv_details, institution_id):
+    all_ready = []
+    for cctv in cctv_details:
+        start_individual_stream(
+            cctv_id=cctv["cctv_id"],
+            rtsp_url=cctv["rtsp_url"],
+            location=cctv["location"],
+            institution_id=institution_id
+        )
+        all_ready.append(cctv["cctv_id"])
+    
+    for cctv_id in all_ready:
+        success = wait_for_hls_ready(cctv_id)
+        if not success:
+            logging.warning(f"HLS stream for CCTV {cctv_id} not ready in time.")
+
+    socketio.emit("stream_status", {"active": True})
+
+def stop_all_streams(cctv_ids):
+    for cctv_id in cctv_ids:
+        stop_individual_stream(cctv_id)
+    socketio.emit("stream_status", {"active": False})

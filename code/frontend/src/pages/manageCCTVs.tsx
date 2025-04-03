@@ -12,7 +12,7 @@ const ManageCCTVs = () => {
   const [cctvs, setCCTVs] = useState<CCTV[] | null>([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedCCTV, setSelectedCCTV] = useState<CCTV | null>(null);
-  const [searchInstitute, setSearchInstitute] = useState<string>("");
+  const [searchIP, setSearchIP] = useState<string>("");
   const [searchCCTV, setSearchCCTV] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,13 +87,18 @@ const ManageCCTVs = () => {
     }
   };
 
-  const filteredCCTVs = cctvs?.filter(
-    (cctv) =>
+  const filteredCCTVs = cctvs?.filter((cctv) => {
+    const matchCCTV =
+      searchCCTV === "" ||
       cctv.name.toLowerCase().includes(searchCCTV.toLowerCase()) ||
       cctv.location.toLowerCase().includes(searchCCTV.toLowerCase()) ||
-      cctv.ip_address.includes(searchCCTV.toLowerCase()) ||
-      (cctv.username && cctv.username.toLowerCase().includes(searchCCTV.toLowerCase()))
-  );
+      (cctv.username && cctv.username.toLowerCase().includes(searchCCTV.toLowerCase()));
+  
+    const matchIP =
+      searchIP === "" || cctv.ip_address.toLowerCase().includes(searchIP.toLowerCase());
+  
+    return matchCCTV && matchIP;
+  });
 
   return (
     <Container className="py-4">
@@ -121,13 +126,13 @@ const ManageCCTVs = () => {
 
           <Row className="mb-3">
             <Col md={6}>
-              <Form.Group controlId="searchInstitute">
-                <Form.Label>Search Institute</Form.Label>
+              <Form.Group controlId="searchIP">
+                <Form.Label>Search IP Address</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Search by institute name"
-                  value={searchInstitute}
-                  onChange={(e) => setSearchInstitute(e.target.value)}
+                  placeholder="Search by Ip address"
+                  value={searchIP}
+                  onChange={(e) => setSearchIP(e.target.value)}
                 />
               </Form.Group>
             </Col>

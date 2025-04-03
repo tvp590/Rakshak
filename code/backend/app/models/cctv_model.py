@@ -32,12 +32,15 @@ class CCTV(db.Model):
             "institution_id": self.institution_id
         }
 
+def create_rtsp_url(userName, passWord, ipAddress):
+    return f"rtsp://{userName}:{passWord}@{ipAddress}:554/stream1"
+
 def get_cctv_details(institution_id):
     cctvs = CCTV.query.filter_by(institution_id=institution_id, is_active=True).all()
     cctv_details = [] 
 
     for cctv in cctvs:
-        rtsp_url = f"rtsp://{cctv.username}:{cctv.password}@{cctv.ip_address}:554/stream1"
+        rtsp_url = create_rtsp_url(cctv.username, cctv.password, cctv.ip_address)
         cctv_details.append({
             'cctv_id': cctv.id,
             'rtsp_url': rtsp_url,

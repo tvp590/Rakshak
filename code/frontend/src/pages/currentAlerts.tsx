@@ -5,7 +5,7 @@ import AlertModal from "../components/modals/alertModal";
 import { GetServerSideProps } from "next";
 import { useUser } from "../context/userContext";
 import { useRouter } from "next/router";
-import { Alerts } from "../types";
+import { Alerts, Role } from "../types";
 import SocketClient from "../components/SocketClient";
 import axios from "axios";
 
@@ -133,17 +133,19 @@ const CurrentAlerts = () => {
                     </Card.Text>
                   </Card.Body>
                   <Card.Footer>
-                    <Row>
-                      <Col className="ms-2">
+                    <Row className="g-2">
+                      <Col xs="auto">
                         <Button variant="primary" onClick={() => handleViewAlert(alert)}>
                           View Details
                         </Button>
                       </Col>
-                      <Col className="ms-2">
-                        <Button variant="danger" onClick={() => handleRejectAlert(alert.id)}>
-                          Reject
-                        </Button>
-                      </Col> 
+                      {user?.role !== Role.User && (
+                        <Col xs="auto">
+                          <Button variant="danger" onClick={() => handleRejectAlert(alert.id)}>
+                            Reject
+                          </Button>
+                        </Col>
+                      )}
                     </Row>
                   </Card.Footer>
                 </Card>

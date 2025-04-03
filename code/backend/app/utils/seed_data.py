@@ -32,9 +32,9 @@ def seed_data():
         db.session.commit()
 
         # Seed CCTVs
-        cctv1 = CCTV(name="Main Entrance", location="Front Gate", ip_address=os.getenv('CCTV_IP'), username=os.getenv('CCTV_USERNAME'), password=os.getenv('CCTV_PASSWORD'), institution_id=institution1.id)
+        cctv1 = CCTV(name="Main Entrance", location="Main Entrance", ip_address=os.getenv('CCTV_IP'), username=os.getenv('CCTV_USERNAME'), password=os.getenv('CCTV_PASSWORD'), institution_id=institution1.id)
 
-        cctv2 = CCTV(name="Library", location="Second Floor", ip_address="192.168.1.102", username="admin", password="cctv123", institution_id=institution1.id)
+        cctv2 = CCTV(name="Library", location="Classroom Building", ip_address=os.getenv('CCTV_IP_2'), username=os.getenv('CCTV_USERNAME_2'), password=os.getenv('CCTV_PASSWORD_2'), institution_id=institution1.id)
 
         cctv3 = CCTV(name="Back Entrance", location="Main Floor", ip_address="192.168.1.111", username="admin", password="cctv123", institution_id=institution2.id)
 

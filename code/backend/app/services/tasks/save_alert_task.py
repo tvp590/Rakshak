@@ -4,13 +4,13 @@ from ...extensions import db
 from sqlalchemy import and_
 from datetime import datetime, timezone, timedelta
 
-DUPLICATE_TIME_WINDOW = 20 
+DUPLICATE_TIME_WINDOW = 1 
 
 @shared_task(queue="celery")
 def save_alert(cctv_id, location, weapon_type, image_path, institution_id):
     try:
         now_utc = datetime.now(timezone.utc)
-        time_threshold = now_utc - timedelta(seconds=DUPLICATE_TIME_WINDOW)
+        time_threshold = now_utc - timedelta(minutes=DUPLICATE_TIME_WINDOW)
 
         existing_alert = Alert.query.filter(
             and_(
