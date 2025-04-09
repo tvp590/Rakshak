@@ -31,3 +31,14 @@ architecture-beta
     %% Connect junctions for visual clarity
     junctionProcessing:R -- L:server
 
+```
+
+<br>
+
+---
+
+### Final Technology Stack
+
+![Final Technology Stack](../../public/images/Tech-Stack.png)
+
+
